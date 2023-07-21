@@ -64,7 +64,7 @@ export function ContributionsLineChart({ data }: LineChartProps) {
   ];
 
   return (
-    <div className="bg-white px-8 py-7 my-5 rounded-[20px]">
+    <div className="bg-white px-8 py-7 rounded-[20px]">
       <div className="w-[123px] p-2 bg-zinc-100 flex items-center gap-1 text-green-600 focus-within:ring-2 focus-within:ring-leaf rounded">
         <Calendar strokeWidth={1} className="w-6 h-6" />
         <select

@@ -22,6 +22,11 @@ const AdoptionsLineChart = dynamic(
 import { CardInfo } from '@/components/CardInfo';
 import { Layout } from '@/components/Layout';
 import { CircleDollarSign, Dog, HelpingHand } from 'lucide-react';
+import { TopTable } from '@/components/Table/TopTable';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { TeamMembers } from '@/components/TeamMembers';
+import Head from 'next/head';
 
 const dataOne = [
   { month: '2023-01-01', donations: 1000, sponsorships: 500 },
@@ -47,38 +52,143 @@ const dataTwo = [
   // Adicione mais dados para outros meses e anos, se necessário
 ];
 
+const contributions = [
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+  {
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    amount: 100,
+  },
+];
+
+export const members = [
+  {
+    id: '1',
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    office: 'Presidente',
+  },
+  {
+    id: '2',
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    office: 'Presidente',
+  },
+  {
+    id: '3',
+    avatarURL: 'https://github.com/joaod3v.png',
+    name: 'João Pedro Silva',
+    office: 'Presidente',
+  },
+];
+
+export const contributionOne = {
+  title: `Top Contribuidores - Ano ${new Date().getFullYear()}`,
+  link: '/',
+  tableItems: ['Nome', 'Total de Contribuições'],
+  contributions,
+};
+
+export const contributionTwo = {
+  title: `Top Contribuidores - ${format(new Date(), 'MMM/yy', {
+    locale: ptBR,
+  })}`,
+  link: '/',
+  tableItems: ['Nome', 'Total de Contribuições'],
+  contributions,
+};
+
 export default function Home() {
   return (
-    <Layout title="Dashboard">
-      <div className="flex items-start gap-5">
-        <CardInfo
-          Icon={CircleDollarSign}
-          amount={350}
-          title="Doações"
-          currentDate={new Date()}
-          growthComparedLastMonth={23}
-        />
+    <>
+      <Head>
+        <title>Dashboard | Patas Peludas</title>
+      </Head>
+      <Layout title="Dashboard">
+        <div className="flex items-start gap-5">
+          <CardInfo
+            Icon={CircleDollarSign}
+            amount={350}
+            title="Doações"
+            currentDate={new Date()}
+            growthComparedLastMonth={23}
+          />
 
-        <CardInfo
-          Icon={HelpingHand}
-          amount={350}
-          title="Apadrinhamentos"
-          currentDate={new Date()}
-          growthComparedLastMonth={23}
-        />
+          <CardInfo
+            Icon={HelpingHand}
+            amount={350}
+            title="Apadrinhamentos"
+            currentDate={new Date()}
+            growthComparedLastMonth={23}
+          />
 
-        <CardInfo
-          Icon={Dog}
-          quantity={10}
-          title="Adoções"
-          currentDate={new Date()}
-          growthComparedLastMonth={23}
-        />
-      </div>
+          <CardInfo
+            Icon={Dog}
+            quantity={10}
+            title="Adoções"
+            currentDate={new Date()}
+            growthComparedLastMonth={23}
+          />
+        </div>
+        <div className="my-5 flex flex-col gap-5">
+          <ContributionsLineChart data={dataOne} />
 
-      <ContributionsLineChart data={dataOne} />
+          <AdoptionsLineChart data={dataTwo} />
+        </div>
 
-      <AdoptionsLineChart data={dataTwo} />
-    </Layout>
+        <div className="w-full grid grid-cols-2 gap-5">
+          <TopTable {...contributionOne} />
+          <TopTable {...contributionTwo} />
+        </div>
+
+        <div className="w-full my-5">
+          <TeamMembers members={members} />
+        </div>
+      </Layout>
+    </>
   );
 }

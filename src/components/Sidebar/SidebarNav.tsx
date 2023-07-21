@@ -4,7 +4,7 @@ import {
   Dog,
   HeartHandshake,
   LayoutDashboard,
-  Send,
+  ShieldQuestion,
   Users,
 } from 'lucide-react';
 
@@ -29,14 +29,16 @@ const menuItems = [
 const teamItem = {
   Icon: Users,
   name: 'Patas Peludas Org',
-  link: '/equipe',
+  link: '/organizacao',
 };
 
-const feedbackItem = {
-  Icon: Send,
-  name: 'Dar Feedback',
-  link: '/feedback',
-};
+const platformItem = [
+  {
+    Icon: ShieldQuestion,
+    name: 'Suporte',
+    link: '/plataforma',
+  },
+];
 
 export function SidebarNav() {
   return (
@@ -49,12 +51,16 @@ export function SidebarNav() {
         ))}
       </NavSection>
 
-      <NavSection title="EQUIPE">
+      <NavSection title="Organização">
         <NavLink {...teamItem}>{teamItem.name}</NavLink>
       </NavSection>
 
-      <NavSection title="Feedback">
-        <NavLink {...feedbackItem}>{feedbackItem.name}</NavLink>
+      <NavSection title="Plataforma">
+        {platformItem.map((item) => (
+          <NavLink key={item.link} {...item}>
+            {item.name}
+          </NavLink>
+        ))}
       </NavSection>
     </div>
   );
