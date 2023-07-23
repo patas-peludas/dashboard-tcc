@@ -26,6 +26,9 @@ module.exports = {
       fontFamily: {
         sans: ['DM Sans', 'sans-serif'],
       },
+      screens: {
+        mobile: '320px',
+      },
     },
   },
   plugins: [],

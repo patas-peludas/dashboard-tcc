@@ -27,6 +27,10 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TeamMembers } from '@/components/TeamMembers';
 import Head from 'next/head';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { api } from '@/services/api';
+import { getAuth } from '@clerk/nextjs/server';
+import { AxiosError } from 'axios';
 
 const dataOne = [
   { month: '2023-01-01', donations: 1000, sponsorships: 500 },
@@ -142,7 +146,7 @@ export const contributionTwo = {
   contributions,
 };
 
-export default function Home() {
+export default function Dashboard() {
   return (
     <>
       <Head>
@@ -192,3 +196,33 @@ export default function Home() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (
+  ctx: GetServerSidePropsContext
+) => {
+  const { getToken } = getAuth(ctx.req);
+  const token = await getToken();
+
+  try {
+    await api.get('/users/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    const error = err as AxiosError;
+
+    if (error.response?.status === 404) {
+      return {
+        redirect: {
+          destination: '/cadastro',
+          permanent: false,
+        },
+      };
+    }
+  }
+
+  return {
+    props: {},
+  };
+};

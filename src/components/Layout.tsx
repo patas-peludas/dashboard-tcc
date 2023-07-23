@@ -1,19 +1,21 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { useRouter } from 'next/router';
-import { Bell, Moon } from 'lucide-react';
+// import { Bell, Moon } from 'lucide-react';
+import { UserButton } from '@clerk/nextjs';
 
 type LayoutProps = {
   title: string;
+  isLocked?: boolean;
   children: ReactNode;
 };
 
-export function Layout({ title, children }: LayoutProps) {
+export function Layout({ title, children, isLocked = false }: LayoutProps) {
   const router = useRouter();
 
   return (
     <div className="relative flex">
-      <Sidebar />
+      <Sidebar isLocked={isLocked} />
       <main className="flex-1 ml-[290px] min-h-screen px-8 py-12">
         <div className="flex w-full items-center justify-between mb-8">
           <div className="flex flex-col gap-[2px]">
@@ -27,7 +29,16 @@ export function Layout({ title, children }: LayoutProps) {
             </h1>
           </div>
 
-          <div className="py-3 pr-3 pl-6 rounded-[30px] bg-white flex items-center gap-3">
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: 'w-10 h-10',
+              },
+            }}
+          />
+
+          {/* <div className="py-3 pr-3 pl-6 rounded-[30px] bg-white flex items-center gap-3">
             <button>
               <Bell strokeWidth={1} className="w-6 h-6 text-green-700" />
             </button>
@@ -36,8 +47,15 @@ export function Layout({ title, children }: LayoutProps) {
               <Moon strokeWidth={1} className="w-6 h-6 text-green-700" />
             </button>
 
-            <button className="bg-zinc-300 w-[42px] h-[42px] rounded-full"></button>
-          </div>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: 'w-10 h-10',
+                },
+              }}
+            />
+          </div> */}
         </div>
 
         {children}
