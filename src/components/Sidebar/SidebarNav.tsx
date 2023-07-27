@@ -1,10 +1,10 @@
 import { NavLink } from './NavLink';
 import { NavSection } from './NavSection';
 import {
+  CheckCircle2,
   Dog,
   HeartHandshake,
   LayoutDashboard,
-  Lock,
   ShieldQuestion,
   Users,
 } from 'lucide-react';
@@ -49,29 +49,23 @@ export function SidebarNav({ isLocked }: SidebarNavProps) {
   return (
     <div className="mt-8 pl-8 w-full flex flex-col items-start justify-start gap-8">
       {!isLocked && (
-        <>
-          <NavSection title="MENU">
-            {menuItems.map((item) => (
-              <NavLink key={item.link} link={item.link} Icon={item.Icon}>
-                {item.name}
-              </NavLink>
-            ))}
-          </NavSection>
-
-          <NavSection title="Organização">
-            <NavLink {...teamItem}>{teamItem.name}</NavLink>
-          </NavSection>
-        </>
+        <NavSection title="MENU">
+          {menuItems.map((item) => (
+            <NavLink key={item.link} link={item.link} Icon={item.Icon}>
+              {item.name}
+            </NavLink>
+          ))}
+        </NavSection>
       )}
 
-      {isLocked && (
-        <div className="flex-1 flex flex-col items-start justify-center gap-2 ">
-          <Lock strokeWidth={2} className="w-6 h-6 text-green-700" />
-          <span className="text-base text-green-600 leading-5">
-            Complete seu cadastro para acessar as funcionalidades.
-          </span>
-        </div>
-      )}
+      <NavSection title="Organização">
+        {!isLocked && <NavLink {...teamItem}>{teamItem.name}</NavLink>}
+        {isLocked && (
+          <NavLink Icon={CheckCircle2} link="/organizacao/criar-ou-entrar">
+            Criar ou Entrar
+          </NavLink>
+        )}
+      </NavSection>
 
       <NavSection title="Plataforma">
         {platformItem.map((item) => (

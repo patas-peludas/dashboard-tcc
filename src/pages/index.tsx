@@ -28,9 +28,8 @@ import { ptBR } from 'date-fns/locale';
 import { TeamMembers } from '@/components/TeamMembers';
 import Head from 'next/head';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-import { api } from '@/services/api';
 import { getAuth } from '@clerk/nextjs/server';
-import { AxiosError } from 'axios';
+import { clerkClient } from '@clerk/nextjs';
 
 const dataOne = [
   { month: '2023-01-01', donations: 1000, sponsorships: 500 },
@@ -200,26 +199,30 @@ export default function Dashboard() {
 export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
-  const { getToken } = getAuth(ctx.req);
-  const token = await getToken();
+  const { userId } = getAuth(ctx.req);
 
-  try {
-    await api.get('/users/me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  if (!userId) {
+    return {
+      redirect: {
+        destination: '/sign-in',
+        permanent: false,
       },
-    });
-  } catch (err) {
-    const error = err as AxiosError;
+    };
+  }
 
-    if (error.response?.status === 404) {
-      return {
-        redirect: {
-          destination: '/cadastro',
-          permanent: false,
-        },
-      };
-    }
+  const user = await clerkClient.users.getUser(userId);
+
+  const role = user?.publicMetadata.role;
+
+  const orgId = user?.publicMetadata.orgId;
+
+  if (role !== 'ADMIN' || !orgId) {
+    return {
+      redirect: {
+        destination: '/organizacao/criar-ou-entrar',
+        permanent: false,
+      },
+    };
   }
 
   return {

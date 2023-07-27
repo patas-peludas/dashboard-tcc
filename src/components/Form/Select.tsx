@@ -1,6 +1,7 @@
 import {
   ForwardRefRenderFunction,
-  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
   forwardRef,
 } from 'react';
 import { FieldError } from 'react-hook-form';
@@ -8,16 +9,25 @@ import { Label } from './Label';
 import { ErrorMessage } from './ErrorMessage';
 import { clsx } from 'clsx';
 
-type InputProps = {
+type SelectProps = {
   name: string;
   label: string;
   error?: FieldError;
   tooltipMessage?: string;
+  children: ReactNode;
   isRequired?: boolean;
-} & InputHTMLAttributes<HTMLInputElement>;
+} & SelectHTMLAttributes<HTMLSelectElement>;
 
-const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
-  { name, error = null, label, tooltipMessage, isRequired = false, ...rest },
+const SelectBase: ForwardRefRenderFunction<HTMLSelectElement, SelectProps> = (
+  {
+    name,
+    error = null,
+    label,
+    tooltipMessage,
+    children,
+    isRequired = false,
+    ...rest
+  },
   ref
 ) => {
   return (
@@ -29,26 +39,26 @@ const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
           tooltipMessage={tooltipMessage}
           isRequired={isRequired}
         />
-        <input
+
+        <select
           name={name}
           id={name}
-          type="text"
           {...rest}
           className={clsx(
-            'w-full h-10 p-2 text-sm text-green-600 leading-5 tracking-[0.15px] rounded border-solid border outline-none ring-leaf placeholder:text-zinc-400 focus:!ring-leaf focus:ring-1',
+            'w-full h-10 p-2 text-sm text-green-600 leading-5 tracking-[0.15px] rounded border-solid border  bg-zinc-50 outline-none ring-leaf placeholder:text-zinc-400 focus:!ring-leaf focus:ring-1',
             {
               'border-green-500': !error,
               'border-red-500': error,
-              'bg-zinc-300 cursor-not-allowed': rest.disabled,
-              'bg-zinc-50 cursor-auto': !rest.disabled,
             }
           )}
           ref={ref}
-        />
+        >
+          {children}
+        </select>
       </div>
       {!!error && <ErrorMessage message={error.message} />}
     </div>
   );
 };
 
-export const Input = forwardRef(InputBase);
+export const Select = forwardRef(SelectBase);

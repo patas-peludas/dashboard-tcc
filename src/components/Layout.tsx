@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { useRouter } from 'next/router';
 // import { Bell, Moon } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
+import { Bell } from 'lucide-react';
 
 type LayoutProps = {
   title: string;
@@ -29,23 +30,14 @@ export function Layout({ title, children, isLocked = false }: LayoutProps) {
             </h1>
           </div>
 
-          <UserButton
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: 'w-10 h-10',
-              },
-            }}
-          />
-
-          {/* <div className="py-3 pr-3 pl-6 rounded-[30px] bg-white flex items-center gap-3">
+          <div className="py-3 pr-3 pl-6 rounded-[30px] bg-white flex items-center gap-3">
             <button>
               <Bell strokeWidth={1} className="w-6 h-6 text-green-700" />
             </button>
 
-            <button>
+            {/* <button>
               <Moon strokeWidth={1} className="w-6 h-6 text-green-700" />
-            </button>
+            </button> */}
 
             <UserButton
               afterSignOutUrl="/"
@@ -55,7 +47,7 @@ export function Layout({ title, children, isLocked = false }: LayoutProps) {
                 },
               }}
             />
-          </div> */}
+          </div>
         </div>
 
         {children}
