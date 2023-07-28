@@ -8,15 +8,21 @@ import { Bell } from 'lucide-react';
 type LayoutProps = {
   title: string;
   isLocked?: boolean;
+  orgName?: string;
   children: ReactNode;
 };
 
-export function Layout({ title, children, isLocked = false }: LayoutProps) {
+export function Layout({
+  title,
+  children,
+  isLocked = false,
+  orgName,
+}: LayoutProps) {
   const router = useRouter();
 
   return (
     <div className="relative flex">
-      <Sidebar isLocked={isLocked} />
+      <Sidebar isLocked={isLocked} orgName={orgName} />
       <main className="flex-1 ml-[290px] min-h-screen px-8 py-12">
         <div className="flex w-full items-center justify-between mb-8">
           <div className="flex flex-col gap-[2px]">

@@ -2,7 +2,7 @@ export function Spinner() {
   return (
     <svg
       aria-hidden="true"
-      className="w-4 h-8 mr-4 animate-spin text-zinc-700 fill-zinc-50"
+      className="w-full h-full animate-spin text-zinc-700 fill-zinc-50"
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

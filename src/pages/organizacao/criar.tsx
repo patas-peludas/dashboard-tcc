@@ -24,10 +24,9 @@ type User = {
 
 type CreateProps = {
   email: string | null;
-  token: string;
 };
 
-export default function Create({ email, token }: CreateProps) {
+export default function Create({ email }: CreateProps) {
   const [type, setType] = useState<OrgType | null>(null);
 
   return (
@@ -62,9 +61,9 @@ export default function Create({ email, token }: CreateProps) {
         {type && (
           <>
             {type === 'ONG' ? (
-              <OngForm email={email} type={type} token={token} />
+              <OngForm email={email} type={type} />
             ) : (
-              <IndependentGroupForm email={email} />
+              <IndependentGroupForm email={email} type={type} />
             )}
           </>
         )}
@@ -78,7 +77,7 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const { getToken, userId } = getAuth(ctx.req);
 
-  const token = await getToken();
+  const token = await getToken({ template: 'jwt-patas-peludas' });
 
   if (!token || !userId) {
     return {
@@ -115,7 +114,6 @@ export const getServerSideProps: GetServerSideProps = async (
       return {
         props: {
           email: data.user.email,
-          token,
         },
       };
     } catch {
@@ -128,7 +126,6 @@ export const getServerSideProps: GetServerSideProps = async (
       return {
         props: {
           email: data.user.email,
-          token,
         },
       };
     }

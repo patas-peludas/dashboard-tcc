@@ -11,6 +11,10 @@ import { Spinner } from '@/components/Spinner';
 import { InputSocial } from '../InputSocial';
 import { api } from '@/services/api';
 import { OrgType } from '@/pages/organizacao/criar';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/router';
+import { toast } from 'react-hot-toast';
+import { setCookie } from 'nookies';
 
 type OngFormData = {
   avatarUrl?: string;
@@ -25,10 +29,10 @@ type OngFormData = {
     pix_code: string;
   };
   socialMedias?: {
-    instagramUrl: string;
-    facebookUrl: string;
-    twitterUrl: string;
-    linkedinUrl: string;
+    instagramUrl?: string;
+    facebookUrl?: string;
+    twitterUrl?: string;
+    linkedinUrl?: string;
   };
   address: {
     cep: string;
@@ -48,10 +52,14 @@ type AxiosAddressProps = {
   street: string;
 };
 
+export type SocialMedia = {
+  type: 'INSTAGRAM' | 'FACEBOOK' | 'TWITTER' | 'LINKEDIN';
+  url: string;
+};
+
 type OngFormProps = {
   email: string | null;
   type: OrgType;
-  token: string;
 };
 
 const createOngSchema = yup.object().shape({
@@ -81,7 +89,11 @@ const createOngSchema = yup.object().shape({
   }),
 });
 
-export function OngForm({ email, type, token }: OngFormProps) {
+export function OngForm({ email, type }: OngFormProps) {
+  const { getToken } = useAuth();
+
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -99,6 +111,8 @@ export function OngForm({ email, type, token }: OngFormProps) {
 
   const handleCreate: SubmitHandler<OngFormData> = async (values) => {
     try {
+      const token = await getToken({ template: 'jwt-patas-peludas' });
+
       const org = {
         avatar_url: null,
         username: values.username,
@@ -120,6 +134,16 @@ export function OngForm({ email, type, token }: OngFormProps) {
           },
         }
       );
+
+      setCookie(undefined, 'pataspeludas.orgName', org.name, {
+        maxAge: 60 * 60 * 24 * 30, // 30 dias
+        path: '/',
+      });
+
+      setCookie(undefined, 'pataspeludas.orgType', org.type, {
+        maxAge: 60 * 60 * 24 * 30, // 30 dias
+        path: '/',
+      });
 
       await api.post(
         '/teams',
@@ -151,9 +175,67 @@ export function OngForm({ email, type, token }: OngFormProps) {
         }
       );
 
-      //To Do Socials
-    } catch (err) {
-      console.log(err);
+      const socialMediasArray: SocialMedia[] = [];
+
+      if (values.socialMedias?.instagramUrl) {
+        socialMediasArray.push({
+          type: 'INSTAGRAM',
+          url: `https://www.instagram.com/${values.socialMedias.instagramUrl}`,
+        });
+      }
+
+      if (values.socialMedias?.facebookUrl) {
+        socialMediasArray.push({
+          type: 'FACEBOOK',
+          url: `https://www.facebook.com/${values.socialMedias.facebookUrl}`,
+        });
+      }
+
+      if (values.socialMedias?.twitterUrl) {
+        socialMediasArray.push({
+          type: 'TWITTER',
+          url: `https://www.twitter.com/${values.socialMedias.twitterUrl}`,
+        });
+      }
+
+      if (values.socialMedias?.linkedinUrl) {
+        socialMediasArray.push({
+          type: 'LINKEDIN',
+          url: `https://www.linkedin.com/in/${values.socialMedias.linkedinUrl}`,
+        });
+      }
+
+      if (socialMediasArray.length > 0) {
+        await api.post(
+          '/social-medias',
+          { socialMedias: socialMediasArray },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+
+      router.push('/');
+    } catch {
+      toast.custom(
+        (t) => (
+          <div
+            className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            }`}
+          >
+            <span className=" text-base font-semibold">
+              Não foi possível completar a ação 🙁
+            </span>
+            <p className="text-xs">
+              Se persistir o erro, entre em contato com o suporte.
+            </p>
+          </div>
+        ),
+        { position: 'bottom-right' }
+      );
     }
   };
 
@@ -189,6 +271,8 @@ export function OngForm({ email, type, token }: OngFormProps) {
 
     if (!verification) {
       setError('username', { message: 'Nome de usuário indisponível' });
+    } else {
+      clearErrors('username');
     }
   }
 
@@ -205,10 +289,13 @@ export function OngForm({ email, type, token }: OngFormProps) {
         <div className="grid grid-cols-3 gap-4 mt-4">
           <Input
             label="Nome de usuário da organização"
-            placeholder="@minhaorganizacao"
+            placeholder="minhaorganizacao"
             {...register('username')}
             error={errors.username}
             isRequired
+            onChange={(e) =>
+              setValue('username', e.target.value.replace(/^@/, ''))
+            }
             onBlur={(e) => handleUsernameVerification(e.target.value)}
           />
           <Input
@@ -398,31 +485,55 @@ export function OngForm({ email, type, token }: OngFormProps) {
 
             <InputSocial
               label="Instagram"
-              placeholder="@minhaorganizacao"
+              placeholder="minhaorganizacao"
               {...register('socialMedias.instagramUrl')}
               error={errors.socialMedias?.instagramUrl}
               prefix="https://www.instagram.com/"
+              onChange={(e) =>
+                setValue(
+                  'socialMedias.instagramUrl',
+                  e.target.value.replace(/^@/, '')
+                )
+              }
             />
             <InputSocial
               label="Facebook"
-              placeholder="@minhaorganizacao"
+              placeholder="minhaorganizacao"
               {...register('socialMedias.facebookUrl')}
               error={errors.socialMedias?.facebookUrl}
               prefix="https://www.facebook.com/"
+              onChange={(e) =>
+                setValue(
+                  'socialMedias.facebookUrl',
+                  e.target.value.replace(/^@/, '')
+                )
+              }
             />
             <InputSocial
               label="Twitter"
-              placeholder="@minhaorganizacao"
+              placeholder="minhaorganizacao"
               {...register('socialMedias.twitterUrl')}
               error={errors.socialMedias?.twitterUrl}
               prefix="https://www.twitter.com/"
+              onChange={(e) =>
+                setValue(
+                  'socialMedias.twitterUrl',
+                  e.target.value.replace(/^@/, '')
+                )
+              }
             />
             <InputSocial
               label="LinkedIn"
-              placeholder="@minhaorganizacao"
+              placeholder="minhaorganizacao"
               {...register('socialMedias.linkedinUrl')}
               error={errors.socialMedias?.linkedinUrl}
               prefix="https://www.linkedin.com/in/"
+              onChange={(e) =>
+                setValue(
+                  'socialMedias.linkedinUrl',
+                  e.target.value.replace(/^@/, '')
+                )
+              }
             />
           </fieldset>
         </div>
@@ -430,11 +541,13 @@ export function OngForm({ email, type, token }: OngFormProps) {
 
       <button
         type="submit"
-        className="w-max bg-leaf py-3 px-4 rounded hover:brightness-90 transition-colors mt-2 self-start"
+        className="w-32 h-12 bg-green-500 flex items-center justify-center rounded hover:brightness-90 transition-colors mt-2 self-start disabled:bg-green-700 disabled:cursor-not-allowed disabled:hover:bg-green-700"
         disabled={isSubmitting}
       >
         {isSubmitting ? (
-          <Spinner />
+          <div className="w-5 h-5">
+            <Spinner />
+          </div>
         ) : (
           <span className="flex items-center gap-2 text-white text-xl">
             <Save strokeWidth={1} /> Salvar
