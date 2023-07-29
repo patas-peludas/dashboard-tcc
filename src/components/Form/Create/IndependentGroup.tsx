@@ -226,29 +226,31 @@ export function IndependentGroupForm({
         );
       }
 
-      await Promise.all(
-        values.locales.map(async (locale) => {
-          const address = {
-            cep: null,
-            street: null,
-            number: null,
-            complement: null,
-            neighborhood: null,
-            city: locale.city,
-            uf: locale.uf,
-          };
+      if (values.locales.length > 0) {
+        await Promise.all(
+          values.locales.map(async (locale) => {
+            const address = {
+              cep: null,
+              street: null,
+              number: null,
+              complement: null,
+              neighborhood: null,
+              city: locale.city,
+              uf: locale.uf,
+            };
 
-          await api.post(
-            '/addresses',
-            { ...address },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        })
-      );
+            await api.post(
+              '/addresses',
+              { ...address },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+          })
+        );
+      }
 
       router.push('/');
     } catch {

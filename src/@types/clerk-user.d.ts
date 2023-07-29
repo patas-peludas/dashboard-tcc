@@ -2,7 +2,8 @@ export type Role = 'ADMIN' | 'MEMBER' | 'VISITOR';
 
 declare global {
   interface UserPublicMetadata {
-    role: Role;
-    orgId: string;
+    role?: Role;
+    orgId?: string;
+    teamId?: string;
   }
 }

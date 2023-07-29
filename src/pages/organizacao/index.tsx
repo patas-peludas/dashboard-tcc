@@ -1,7 +1,6 @@
 import { Layout } from '@/components/Layout';
-import { TeamMembers } from '@/components/TeamMembers';
+import { Team, TeamMembers } from '@/components/TeamMembers';
 import Head from 'next/head';
-import { members } from '..';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs';
@@ -9,26 +8,43 @@ import { parseCookies, setCookie } from 'nookies';
 import { api } from '@/services/api';
 import { OngForm } from '@/components/Form/Create/OngForm';
 import { IndependentGroupForm } from '@/components/Form/Create/IndependentGroup';
+import { Role } from '@/@types/clerk-user';
 
 type OrganizationProps = {
+  userId: string;
   orgName: string;
   orgType: 'ONG' | 'INDEPENDENT_GROUP';
+  members: {
+    approveds: Team[];
+    pendents: Team[];
+  };
+  role: Role;
 };
 
-export default function Organization({ orgName, orgType }: OrganizationProps) {
+export default function Organization({
+  userId,
+  orgName,
+  orgType,
+  members,
+  role,
+}: OrganizationProps) {
   return (
     <>
       <Head>
         <title>Equipe | Patas Peludas</title>
       </Head>
-      <Layout title="Organização" orgName={orgName}>
+      <Layout title={orgName} orgName={orgName}>
         <div className="flex flex-col gap-5">
-          <TeamMembers members={members} />
+          <TeamMembers members={members} userId={userId} role={role} />
 
-          {orgType === 'ONG' ? (
-            <OngForm email={null} type="ONG" />
-          ) : (
-            <IndependentGroupForm email={null} type="INDEPENDENT_GROUP" />
+          {role === 'ADMIN' && (
+            <>
+              {orgType === 'ONG' ? (
+                <OngForm email={null} type="ONG" />
+              ) : (
+                <IndependentGroupForm email={null} type="INDEPENDENT_GROUP" />
+              )}
+            </>
           )}
         </div>
       </Layout>
@@ -39,9 +55,11 @@ export default function Organization({ orgName, orgType }: OrganizationProps) {
 export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
-  const { userId } = getAuth(ctx.req);
+  const { getToken, userId } = getAuth(ctx.req);
 
-  if (!userId) {
+  const token = await getToken({ template: 'jwt-patas-peludas' });
+
+  if (!token || !userId) {
     return {
       redirect: {
         destination: '/sign-in',
@@ -52,11 +70,9 @@ export const getServerSideProps: GetServerSideProps = async (
 
   const user = await clerkClient.users.getUser(userId);
 
-  const role = user?.publicMetadata.role;
-
   const orgId = user?.publicMetadata.orgId;
 
-  if (role !== 'ADMIN' || !orgId) {
+  if (!orgId) {
     return {
       redirect: {
         destination: '/organizacao/criar-ou-entrar',
@@ -91,10 +107,24 @@ export const getServerSideProps: GetServerSideProps = async (
     });
   }
 
+  const { data } = await api.get('/teams/members', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const role = user?.publicMetadata.role;
+
   return {
     props: {
+      userId,
       orgName,
       orgType,
+      members: {
+        approveds: data.approveds,
+        pendents: data.pendents,
+      },
+      role,
     },
   };
 };

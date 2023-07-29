@@ -1,7 +1,22 @@
+import { Role } from '@/@types/clerk-user';
 import { Layout } from '@/components/Layout';
+import { api } from '@/services/api';
+import { clerkClient } from '@clerk/nextjs';
+import { getAuth } from '@clerk/nextjs/server';
 import { HeartHandshake, LogIn } from 'lucide-react';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+
+export type User = {
+  id: string;
+  avatarUrl: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: Role | null;
+  isVerified: boolean;
+};
 
 export default function CreateOrEnter() {
   return (
@@ -33,3 +48,68 @@ export default function CreateOrEnter() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (
+  ctx: GetServerSidePropsContext
+) => {
+  const { getToken, userId } = getAuth(ctx.req);
+
+  const token = await getToken({ template: 'jwt-patas-peludas' });
+
+  if (!token || !userId) {
+    return {
+      redirect: {
+        destination: '/sign-in',
+        permanent: false,
+      },
+    };
+  }
+
+  const user = await clerkClient.users.getUser(userId);
+
+  const orgId = user?.publicMetadata.orgId;
+
+  if (orgId) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  } else {
+    try {
+      await api.post<{ user: User }>(
+        '/users',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return {
+        props: {},
+      };
+    } catch {
+      try {
+        await api.get('/teams/request', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        return {
+          redirect: {
+            destination: '/organizacao/aguardando-confirmacao',
+            permanent: false,
+          },
+        };
+      } catch {
+        return {
+          props: {},
+        };
+      }
+    }
+  }
+};

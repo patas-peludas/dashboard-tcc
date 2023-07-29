@@ -7,20 +7,10 @@ import { getAuth } from '@clerk/nextjs/server';
 import { api } from '@/services/api';
 import { OngForm } from '@/components/Form/Create/OngForm';
 import { IndependentGroupForm } from '@/components/Form/Create/IndependentGroup';
-import { Role } from '@/@types/clerk-user';
 import { clerkClient } from '@clerk/nextjs';
+import { User } from './criar-ou-entrar';
 
 export type OrgType = 'ONG' | 'INDEPENDENT_GROUP';
-
-type User = {
-  id: string;
-  avatarUrl: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: Role | null;
-  isVerified: boolean;
-};
 
 type CreateProps = {
   email: string | null;
@@ -101,22 +91,6 @@ export const getServerSideProps: GetServerSideProps = async (
     };
   } else {
     try {
-      const { data } = await api.post<{ user: User }>(
-        '/users',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      return {
-        props: {
-          email: data.user.email,
-        },
-      };
-    } catch {
       const { data } = await api.get<{ user: User }>('/users/me', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -126,6 +100,13 @@ export const getServerSideProps: GetServerSideProps = async (
       return {
         props: {
           email: data.user.email,
+        },
+      };
+    } catch {
+      return {
+        redirect: {
+          destination: '/organizacao/criar-ou-entrar',
+          permanent: false,
         },
       };
     }
