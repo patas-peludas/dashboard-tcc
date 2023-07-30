@@ -16,7 +16,7 @@ import { useRouter } from 'next/router';
 import { toast } from 'react-hot-toast';
 import { setCookie } from 'nookies';
 
-type OngFormData = {
+export type OngFormData = {
   avatarUrl?: string;
   username: string;
   name: string;
@@ -60,6 +60,8 @@ export type SocialMedia = {
 type OngFormProps = {
   email: string | null;
   type: OrgType;
+  isUpdateMode?: boolean;
+  ongFormData?: OngFormData | null;
 };
 
 const createOngSchema = yup.object().shape({
@@ -89,7 +91,12 @@ const createOngSchema = yup.object().shape({
   }),
 });
 
-export function OngForm({ email, type }: OngFormProps) {
+export function OngForm({
+  email,
+  type,
+  isUpdateMode = false,
+  ongFormData,
+}: OngFormProps) {
   const { getToken } = useAuth();
 
   const router = useRouter();
@@ -105,6 +112,7 @@ export function OngForm({ email, type }: OngFormProps) {
     setError,
   } = useForm<OngFormData>({
     resolver: yupResolver(createOngSchema),
+    defaultValues: ongFormData ?? undefined,
   });
 
   const { errors, isSubmitting } = formState;
@@ -350,15 +358,17 @@ export function OngForm({ email, type }: OngFormProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <Input
-            label="Seu cargo na organização"
-            placeholder="Presidente"
-            {...register('office')}
-            error={errors.office}
-            isRequired
-          />
-        </div>
+        {!isUpdateMode && (
+          <div className="grid grid-cols-3 gap-4">
+            <Input
+              label="Seu cargo na organização"
+              placeholder="Presidente"
+              {...register('office')}
+              error={errors.office}
+              isRequired
+            />
+          </div>
+        )}
 
         <TextArea
           label="Descrição da organização"

@@ -9,7 +9,7 @@ import {
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { api } from '@/services/api';
-import { clerkClient, useAuth } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
 import { Role } from '@/@types/clerk-user';
@@ -46,7 +46,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
 
   const { getToken } = useAuth();
 
-  async function handleAcceptRequest(team: Team, joinOnTeam: boolean) {
+  async function handleRequestToJoin(team: Team, joinOnTeam: boolean) {
     const token = await getToken({ template: 'jwt-patas-peludas' });
 
     try {
@@ -62,8 +62,19 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
         }
       );
 
+      const newTeam: Team = {
+        ...team,
+        is_approved: true,
+        user: {
+          id: team.user.id,
+          avatar_url: team.user.avatar_url,
+          name: team.user.name,
+          role: 'MEMBER',
+        },
+      };
+
       if (joinOnTeam) {
-        setApproveds((prev) => [...prev, team]);
+        setApproveds((prev) => [...prev, newTeam]);
         setPendents((prev) => prev.filter((prev) => prev.id !== team.id));
       } else {
         setPendents((prev) => prev.filter((prev) => prev.id !== team.id));
@@ -89,14 +100,12 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
     }
   }
 
-  async function handlePromoteToAdmin(id: string) {
+  async function handlePromoteToAdmin(teamId: string) {
     const token = await getToken({ template: 'jwt-patas-peludas' });
     try {
-      const { data } = await api.patch(
-        `/users/${id}/role`,
-        {
-          role: 'ADMIN',
-        },
+      await api.patch(
+        `/teams/${teamId}/promote`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -105,12 +114,9 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
       );
 
       const newApproveds = [...approveds];
-      const index = newApproveds.findIndex(
-        (team) => team.user.id === data.user.id
-      );
+      const index = newApproveds.findIndex((team) => team.id === teamId);
 
-      newApproveds[index].role = data.user.role;
-      newApproveds[index].user.role = data.user.role;
+      newApproveds[index].user.role = 'ADMIN';
 
       setApproveds(newApproveds);
     } catch {
@@ -134,45 +140,17 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
     }
   }
 
-  async function handleRemoveMember(teamId: string, id: string) {
+  async function handleRemoveMember(teamId: string) {
     const token = await getToken({ template: 'jwt-patas-peludas' });
 
     try {
-      await api.patch(
-        `/users/${id}/role`,
-        {
-          role: 'MEMBER',
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      await api.patch(
-        `/teams/${teamId}/action`,
-        {
-          joinOnTeam: false,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setApproveds((prev) => prev.filter((p) => p.id !== teamId));
-
-      const user = await clerkClient.users.getUser(userId);
-
-      const publicMetadata = user.publicMetadata;
-
-      await clerkClient.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          role: publicMetadata.role,
+      await api.delete(`/teams/${teamId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
+
+      setApproveds((prev) => prev.filter((p) => p.id !== teamId));
     } catch {
       toast.custom(
         (t) => (
@@ -237,7 +215,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
               </p>
             </div>
 
-            {role === 'ADMIN' && (
+            {role === 'ADMIN' && member.user.id !== userId && (
               <Popover.Root>
                 <Popover.Trigger asChild>
                   <button className="ml-auto">
@@ -254,18 +232,18 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
                         Ações
                       </p>
 
-                      <button
-                        onClick={() => handlePromoteToAdmin(member.user.id)}
-                        className="text-green-600 border border-1 border-green-500 hover:ring-1 hover:ring-green-500 transition-colors inline-flex h-[35px] items-center justify-center gap-2 rounded-[4px] px-[15px] py-5 font-medium leading-none outline-none focus:shadow-[0_0_0_2px] text-base"
-                      >
-                        <ShieldAlert />
-                        Promover a administrador
-                      </button>
+                      {member.user.role === 'MEMBER' && (
+                        <button
+                          onClick={() => handlePromoteToAdmin(member.id)}
+                          className="text-green-600 border border-1 border-green-500 hover:ring-1 hover:ring-green-500 transition-colors inline-flex h-[35px] items-center justify-center gap-2 rounded-[4px] px-[15px] py-5 font-medium leading-none outline-none focus:shadow-[0_0_0_2px] text-base"
+                        >
+                          <ShieldAlert />
+                          Promover a administrador
+                        </button>
+                      )}
 
                       <button
-                        onClick={() =>
-                          handleRemoveMember(member.id, member.user.id)
-                        }
+                        onClick={() => handleRemoveMember(member.id)}
                         className="text-green-600 border border-1 border-green-500 hover:ring-1 hover:ring-green-500 transition-colors inline-flex h-[35px] items-center justify-center gap-2 rounded-[4px] px-[15px] py-5 font-medium leading-none outline-none focus:shadow-[0_0_0_2px] text-base"
                       >
                         <UserX />
@@ -292,7 +270,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
           <span className="text-zinc-700 text-base">Pendentes</span>
 
           <div className="mt-4 grid grid-cols-3 gap-4">
-            {members.pendents.map((member) => (
+            {pendents.map((member) => (
               <div
                 key={member.id}
                 className="py-3 px-4 w-full bg-white  rounded-2xl"
@@ -331,7 +309,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
                     <ConfirmationDialog
                       question="Tem certeza que irá aceitar a solicitação?"
                       message="Ao aceitar o membro, ele irá fazer parte do time da organização."
-                      onConfimation={() => handleAcceptRequest(member, true)}
+                      onConfimation={() => handleRequestToJoin(member, true)}
                     />
                   </AlertDialog.Root>
 
@@ -344,7 +322,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
                     <ConfirmationDialog
                       question="Tem certeza que irá recusar a solicitação?"
                       message="Ao recusar o membro, ele não irá fazer parte do time da organização."
-                      onConfimation={() => handleAcceptRequest(member, false)}
+                      onConfimation={() => handleRequestToJoin(member, false)}
                     />
                   </AlertDialog.Root>
                 </div>

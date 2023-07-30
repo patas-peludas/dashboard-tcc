@@ -29,7 +29,7 @@ const platformItem = [
   {
     Icon: ShieldQuestion,
     name: 'Suporte',
-    link: '/plataforma',
+    href: 'https://api.whatsapp.com/send?1=pt_BR&phone=5522988714717&text=Ol%C3%A1,%20poderia%20me%20ajudar%3F',
   },
 ];
 
@@ -50,14 +50,14 @@ export function SidebarNav({ isLocked, orgName }: SidebarNavProps) {
         {!isLocked && (
           <>
             {orgName && (
-              <NavLink Icon={Users} link="/organizacao">
+              <NavLink Icon={Users} href="/organizacao">
                 {orgName}
               </NavLink>
             )}
           </>
         )}
         {isLocked && (
-          <NavLink Icon={CheckCircle2} link="/organizacao/criar-ou-entrar">
+          <NavLink Icon={CheckCircle2} href="/organizacao/criar-ou-entrar">
             Criar ou Entrar
           </NavLink>
         )}
@@ -65,9 +65,18 @@ export function SidebarNav({ isLocked, orgName }: SidebarNavProps) {
 
       <NavSection title="Plataforma">
         {platformItem.map((item) => (
-          <NavLink key={item.link} {...item}>
+          <a
+            key={item.href}
+            {...item}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 text-gray-400 text-base font-medium leading-6 tracking-wider w-full h-[36px] pr-4"
+          >
+            <div>
+              <item.Icon strokeWidth={1} className={'w-6 h-6 text-green-700'} />
+            </div>
             {item.name}
-          </NavLink>
+          </a>
         ))}
       </NavSection>
     </div>

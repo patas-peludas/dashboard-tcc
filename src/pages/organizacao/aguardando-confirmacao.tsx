@@ -26,7 +26,7 @@ export default function WaitConfirmation({ orgName }: WaitConfirmationProps) {
 
           <div className="flex flex-col gap-5 ">
             <p className="text-lg text-green-800">
-              Aguarde enquanto o administrador da organização{' '}
+              Aguarde enquanto algum administrador da organização{' '}
               <strong className="font-semibold">{orgName}</strong> confirma a
               sua solicitação.
             </p>

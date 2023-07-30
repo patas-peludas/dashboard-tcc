@@ -22,7 +22,7 @@ type Locale = {
   uf: string;
 };
 
-type IndependentGroupFormData = {
+export type IndependentGroupFormData = {
   avatarUrl?: string;
   username: string;
   name: string;
@@ -45,6 +45,8 @@ type IndependentGroupFormData = {
 type IndependentGroupFormProps = {
   email: string | null;
   type: OrgType;
+  isUpdateMode?: boolean;
+  independentGroupFormData?: IndependentGroupFormData | null;
 };
 
 const createOrgSchema = yup.object().shape({
@@ -108,6 +110,8 @@ const ufs = [
 export function IndependentGroupForm({
   email,
   type,
+  isUpdateMode = false,
+  independentGroupFormData,
 }: IndependentGroupFormProps) {
   const { getToken } = useAuth();
 
@@ -124,7 +128,7 @@ export function IndependentGroupForm({
     control,
   } = useForm<IndependentGroupFormData>({
     resolver: yupResolver(createOrgSchema),
-    defaultValues: {
+    defaultValues: independentGroupFormData ?? {
       locales: [{ city: '', uf: '' }],
     },
   });
@@ -356,15 +360,17 @@ export function IndependentGroupForm({
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <Input
-            label="Seu cargo na organização"
-            placeholder="Presidente"
-            {...register('office')}
-            error={errors.office}
-            isRequired
-          />
-        </div>
+        {!isUpdateMode && (
+          <div className="grid grid-cols-3 gap-4">
+            <Input
+              label="Seu cargo na organização"
+              placeholder="Presidente"
+              {...register('office')}
+              error={errors.office}
+              isRequired
+            />
+          </div>
+        )}
 
         <TextArea
           label="Descrição da organização"

@@ -4,11 +4,49 @@ import Head from 'next/head';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs';
-import { parseCookies, setCookie } from 'nookies';
 import { api } from '@/services/api';
-import { OngForm } from '@/components/Form/Create/OngForm';
-import { IndependentGroupForm } from '@/components/Form/Create/IndependentGroup';
+import { OngForm, OngFormData } from '@/components/Form/Create/OngForm';
+import {
+  IndependentGroupForm,
+  IndependentGroupFormData,
+} from '@/components/Form/Create/IndependentGroup';
 import { Role } from '@/@types/clerk-user';
+import { OrgType } from './criar';
+
+export type Org = {
+  id: string;
+  avatar_url: string | null;
+  username: string;
+  name: string;
+  type: OrgType;
+  cnpj: string | null;
+  email: string;
+  phone: string;
+  description: string | null;
+  pix_code: string;
+  created_at: Date;
+};
+
+export type SocialMedia = {
+  id: string;
+  type: 'INSTAGRAM' | 'FACEBOOK' | 'TWITTER' | 'LINKEDIN';
+  url: string;
+  created_at: Date;
+  org_id: string;
+};
+
+type Address = {
+  id: string;
+  cep: string | null;
+  street: string | null;
+  number: string | null;
+  complement: string | null;
+  neighborhood: string | null;
+  city: string;
+  uf: string;
+  created_at: Date;
+  org_id: string;
+};
 
 type OrganizationProps = {
   userId: string;
@@ -19,6 +57,8 @@ type OrganizationProps = {
     pendents: Team[];
   };
   role: Role;
+  independentGroupFormData: IndependentGroupFormData | null;
+  ongFormData: OngFormData | null;
 };
 
 export default function Organization({
@@ -27,6 +67,8 @@ export default function Organization({
   orgType,
   members,
   role,
+  independentGroupFormData,
+  ongFormData,
 }: OrganizationProps) {
   return (
     <>
@@ -40,9 +82,19 @@ export default function Organization({
           {role === 'ADMIN' && (
             <>
               {orgType === 'ONG' ? (
-                <OngForm email={null} type="ONG" />
+                <OngForm
+                  email={null}
+                  type="ONG"
+                  ongFormData={ongFormData}
+                  isUpdateMode
+                />
               ) : (
-                <IndependentGroupForm email={null} type="INDEPENDENT_GROUP" />
+                <IndependentGroupForm
+                  email={null}
+                  type="INDEPENDENT_GROUP"
+                  independentGroupFormData={independentGroupFormData}
+                  isUpdateMode
+                />
               )}
             </>
           )}
@@ -81,32 +133,6 @@ export const getServerSideProps: GetServerSideProps = async (
     };
   }
 
-  const { 'pataspeludas.orgName': cookieOrgName } = parseCookies(ctx);
-  const { 'pataspeludas.orgType': cookieOrgType } = parseCookies(ctx);
-
-  let orgName;
-  let orgType;
-
-  if (cookieOrgName && cookieOrgType) {
-    orgName = cookieOrgName;
-    orgType = cookieOrgType;
-  } else {
-    const { data } = await api.get(`/orgs/${orgId}`, { params: { by: 'ID' } });
-
-    orgName = data.org.name;
-    orgType = data.org.type;
-
-    setCookie(ctx, 'pataspeludas.orgName', data.org.name, {
-      maxAge: 60 * 60 * 24 * 30, // 30 dias
-      path: '/',
-    });
-
-    setCookie(undefined, 'pataspeludas.orgType', data.org.type, {
-      maxAge: 60 * 60 * 24 * 30, // 30 dias
-      path: '/',
-    });
-  }
-
   const { data } = await api.get('/teams/members', {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -114,6 +140,101 @@ export const getServerSideProps: GetServerSideProps = async (
   });
 
   const role = user?.publicMetadata.role;
+
+  let independentGroupFormData;
+  let ongFormData;
+
+  let orgName;
+  let orgType;
+
+  if (role === 'ADMIN') {
+    const { data } = await api.get<{
+      org: Org;
+      socialMedias: SocialMedia[];
+      addresses: Address[];
+    }>(`/orgs/${orgId}/complete`, { params: { by: 'ID' } });
+
+    orgName = data.org.name;
+    orgType = data.org.type;
+
+    if (data.org.type === 'ONG') {
+      ongFormData = {
+        avatarUrl: data.org.avatar_url,
+        username: data.org.username,
+        name: data.org.name,
+        cnpj: data.org.cnpj,
+        email: data.org.email,
+        phone: data.org.phone,
+        description: data.org.description,
+        office: '',
+        bank: {
+          pix_code: data.org.pix_code,
+        },
+        socialMedias: {
+          instagramUrl: data.socialMedias
+            .find((social) => social.type === 'INSTAGRAM')
+            ?.url.split('.com/')[1],
+          facebookUrl: data.socialMedias
+            .find((social) => social.type === 'FACEBOOK')
+            ?.url.split('.com/')[1],
+          twitterUrl: data.socialMedias
+            .find((social) => social.type === 'TWITTER')
+            ?.url.split('.com/')[1],
+          linkedinUrl: data.socialMedias
+            .find((social) => social.type === 'LINKEDIN')
+            ?.url.split('.com/in/')[1],
+        },
+        address: data.addresses.find((address) => address.org_id === orgId)!,
+      };
+
+      independentGroupFormData = null;
+    } else {
+      independentGroupFormData = {
+        avatarUrl: data.org.avatar_url,
+        username: data.org.username,
+        name: data.org.name,
+        email: data.org.email,
+        phone: data.org.phone,
+        description: data.org.description,
+        office: '',
+        bank: {
+          pix_code: data.org.pix_code,
+        },
+        socialMedias: {
+          instagramUrl: data.socialMedias
+            .find((social) => social.type === 'INSTAGRAM')
+            ?.url.split('.com/')[1],
+          facebookUrl: data.socialMedias
+            .find((social) => social.type === 'FACEBOOK')
+            ?.url.split('.com/')[1],
+          twitterUrl: data.socialMedias
+            .find((social) => social.type === 'TWITTER')
+            ?.url.split('.com/')[1],
+          linkedinUrl: data.socialMedias
+            .find((social) => social.type === 'LINKEDIN')
+            ?.url.split('.com/in/')[1],
+        },
+        locales: data.addresses.map((address) => {
+          return {
+            city: address.city,
+            uf: address.uf,
+          };
+        }),
+      };
+
+      ongFormData = null;
+    }
+  } else {
+    const { data } = await api.get<{
+      org: Org;
+    }>(`/orgs/${orgId}`, { params: { by: 'ID' } });
+
+    orgName = data.org.name;
+    orgType = data.org.type;
+
+    independentGroupFormData = null;
+    ongFormData = null;
+  }
 
   return {
     props: {
@@ -125,6 +246,8 @@ export const getServerSideProps: GetServerSideProps = async (
         pendents: data.pendents,
       },
       role,
+      ongFormData,
+      independentGroupFormData,
     },
   };
 };
