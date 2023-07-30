@@ -27,15 +27,17 @@ export type Org = {
   created_at: Date;
 };
 
+export type SocialMediaType = 'INSTAGRAM' | 'FACEBOOK' | 'TWITTER' | 'LINKEDIN';
+
 export type SocialMedia = {
   id: string;
-  type: 'INSTAGRAM' | 'FACEBOOK' | 'TWITTER' | 'LINKEDIN';
+  type: SocialMediaType;
   url: string;
   created_at: Date;
   org_id: string;
 };
 
-type Address = {
+export type Address = {
   id: string;
   cep: string | null;
   street: string | null;
@@ -166,7 +168,7 @@ export const getServerSideProps: GetServerSideProps = async (
         email: data.org.email,
         phone: data.org.phone,
         description: data.org.description,
-        office: '',
+        office: 'remove',
         bank: {
           pix_code: data.org.pix_code,
         },
@@ -196,7 +198,7 @@ export const getServerSideProps: GetServerSideProps = async (
         email: data.org.email,
         phone: data.org.phone,
         description: data.org.description,
-        office: '',
+        office: 'remove',
         bank: {
           pix_code: data.org.pix_code,
         },

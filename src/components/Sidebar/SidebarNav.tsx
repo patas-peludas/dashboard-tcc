@@ -27,7 +27,6 @@ type SidebarNavProps = {
 
 const platformItem = [
   {
-    Icon: ShieldQuestion,
     name: 'Suporte',
     href: 'https://api.whatsapp.com/send?1=pt_BR&phone=5522988714717&text=Ol%C3%A1,%20poderia%20me%20ajudar%3F',
   },
@@ -73,7 +72,10 @@ export function SidebarNav({ isLocked, orgName }: SidebarNavProps) {
             className="flex items-center gap-3 text-gray-400 text-base font-medium leading-6 tracking-wider w-full h-[36px] pr-4"
           >
             <div>
-              <item.Icon strokeWidth={1} className={'w-6 h-6 text-green-700'} />
+              <ShieldQuestion
+                strokeWidth={1}
+                className={'w-6 h-6 text-green-700'}
+              />
             </div>
             {item.name}
           </a>

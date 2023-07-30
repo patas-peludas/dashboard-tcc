@@ -14,7 +14,7 @@ import { OrgType } from '@/pages/organizacao/criar';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 import { toast } from 'react-hot-toast';
-import { setCookie } from 'nookies';
+import { useState } from 'react';
 
 export type OngFormData = {
   avatarUrl?: string;
@@ -97,6 +97,8 @@ export function OngForm({
   isUpdateMode = false,
   ongFormData,
 }: OngFormProps) {
+  const [formData, setFormData] = useState(ongFormData);
+
   const { getToken } = useAuth();
 
   const router = useRouter();
@@ -112,15 +114,15 @@ export function OngForm({
     setError,
   } = useForm<OngFormData>({
     resolver: yupResolver(createOngSchema),
-    defaultValues: ongFormData ?? undefined,
+    defaultValues: formData ?? undefined,
   });
 
-  const { errors, isSubmitting } = formState;
+  const { errors, isSubmitting, isDirty } = formState;
 
-  const handleCreate: SubmitHandler<OngFormData> = async (values) => {
-    try {
-      const token = await getToken({ template: 'jwt-patas-peludas' });
+  const handleFormData: SubmitHandler<OngFormData> = async (values) => {
+    const token = await getToken({ template: 'jwt-patas-peludas' });
 
+    if (isUpdateMode) {
       const org = {
         avatar_url: null,
         username: values.username,
@@ -133,36 +135,6 @@ export function OngForm({
         pix_code: values.bank.pix_code,
       };
 
-      await api.post(
-        '/orgs',
-        { ...org },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setCookie(undefined, 'pataspeludas.orgName', org.name, {
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
-        path: '/',
-      });
-
-      setCookie(undefined, 'pataspeludas.orgType', org.type, {
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
-        path: '/',
-      });
-
-      await api.post(
-        '/teams',
-        { role: values.office },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
       const address = {
         cep: values.address.cep,
         street: values.address.street,
@@ -172,16 +144,6 @@ export function OngForm({
         city: values.address.city,
         uf: values.address.uf,
       };
-
-      await api.post(
-        '/addresses',
-        { ...address },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
       const socialMediasArray: SocialMedia[] = [];
 
@@ -213,37 +175,188 @@ export function OngForm({
         });
       }
 
-      if (socialMediasArray.length > 0) {
+      const { data } = await api.put(
+        '/orgs',
+        {
+          ...org,
+          addresses: [{ ...address }],
+          socialMedias: socialMediasArray,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setFormData({
+        avatarUrl: data.org.avatar_url,
+        username: data.org.username,
+        name: data.org.name,
+        cnpj: data.org.cnpj,
+        email: data.org.email,
+        phone: data.org.phone,
+        description: data.org.description,
+        office: 'remove',
+        bank: {
+          pix_code: data.org.pix_code,
+        },
+        socialMedias: {
+          instagramUrl: data.socialMedias
+            .find((social: SocialMedia) => social.type === 'INSTAGRAM')
+            ?.url.split('.com/')[1],
+          facebookUrl: data.socialMedias
+            .find((social: SocialMedia) => social.type === 'FACEBOOK')
+            ?.url.split('.com/')[1],
+          twitterUrl: data.socialMedias
+            .find((social: SocialMedia) => social.type === 'TWITTER')
+            ?.url.split('.com/')[1],
+          linkedinUrl: data.socialMedias
+            .find((social: SocialMedia) => social.type === 'LINKEDIN')
+            ?.url.split('.com/in/')[1],
+        },
+        address: {
+          cep: data.addresses[0].cep,
+          street: data.addresses[0].street,
+          number: data.addresses[0].number,
+          complement: data.addresses[0].complement,
+          neighborhood: data.addresses[0].neighborhood,
+          city: data.addresses[0].city,
+          uf: data.addresses[0].uf,
+        },
+      });
+
+      toast.custom(
+        (t) => (
+          <div
+            className={`bg-green-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            }`}
+          >
+            <span className=" text-base font-semibold">
+              Alterações salvas. 😁
+            </span>
+            <p className="text-xs">Alterações salvas com sucesso.</p>
+          </div>
+        ),
+        { position: 'bottom-right' }
+      );
+    } else {
+      try {
+        const org = {
+          avatar_url: null,
+          username: values.username,
+          name: values.name,
+          type,
+          cnpj: values.cnpj,
+          email: values.email,
+          phone: values.phone,
+          description: values.description ?? null,
+          pix_code: values.bank.pix_code,
+        };
+
         await api.post(
-          '/social-medias',
-          { socialMedias: socialMediasArray },
+          '/orgs',
+          { ...org },
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-      }
 
-      router.push('/');
-    } catch {
-      toast.custom(
-        (t) => (
-          <div
-            className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
-              t.visible ? 'animate-enter' : 'animate-leave'
-            }`}
-          >
-            <span className=" text-base font-semibold">
-              Não foi possível completar a ação 🙁
-            </span>
-            <p className="text-xs">
-              Se persistir o erro, entre em contato com o suporte.
-            </p>
-          </div>
-        ),
-        { position: 'bottom-right' }
-      );
+        await api.post(
+          '/teams',
+          { role: values.office },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const address = {
+          cep: values.address.cep,
+          street: values.address.street,
+          number: values.address.number,
+          complement: values.address.complement ?? null,
+          neighborhood: values.address.neighborhood ?? null,
+          city: values.address.city,
+          uf: values.address.uf,
+        };
+
+        await api.post(
+          '/addresses',
+          { ...address },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const socialMediasArray: SocialMedia[] = [];
+
+        if (values.socialMedias?.instagramUrl) {
+          socialMediasArray.push({
+            type: 'INSTAGRAM',
+            url: `https://www.instagram.com/${values.socialMedias.instagramUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.facebookUrl) {
+          socialMediasArray.push({
+            type: 'FACEBOOK',
+            url: `https://www.facebook.com/${values.socialMedias.facebookUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.twitterUrl) {
+          socialMediasArray.push({
+            type: 'TWITTER',
+            url: `https://www.twitter.com/${values.socialMedias.twitterUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.linkedinUrl) {
+          socialMediasArray.push({
+            type: 'LINKEDIN',
+            url: `https://www.linkedin.com/in/${values.socialMedias.linkedinUrl}`,
+          });
+        }
+
+        if (socialMediasArray.length > 0) {
+          await api.post(
+            '/social-medias',
+            { socialMedias: socialMediasArray },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        }
+
+        router.push('/');
+      } catch {
+        toast.custom(
+          (t) => (
+            <div
+              className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+                t.visible ? 'animate-enter' : 'animate-leave'
+              }`}
+            >
+              <span className=" text-base font-semibold">
+                Não foi possível completar a ação 🙁
+              </span>
+              <p className="text-xs">
+                Se persistir o erro, entre em contato com o suporte.
+              </p>
+            </div>
+          ),
+          { position: 'bottom-right' }
+        );
+      }
     }
   };
 
@@ -287,7 +400,7 @@ export function OngForm({
   return (
     <form
       className="grid mobile:grid-cols-1 2xl:grid-cols-2 gap-6"
-      onSubmit={handleSubmit(handleCreate)}
+      onSubmit={handleSubmit(handleFormData)}
     >
       <fieldset className="border border-green-500 p-5 rounded flex flex-col gap-4">
         <legend className="text-base text-white px-3 py-2 bg-green-600 rounded mb-2">
@@ -319,7 +432,11 @@ export function OngForm({
             {...register('phone')}
             error={errors.phone}
             isRequired
-            onChange={(e) => setValue('phone', celularMask(e.target.value))}
+            onChange={(e) =>
+              setValue('phone', celularMask(e.target.value), {
+                shouldDirty: true,
+              })
+            }
           />
         </div>
 
@@ -330,7 +447,11 @@ export function OngForm({
             {...register('cnpj')}
             error={errors.cnpj}
             isRequired
-            onChange={(e) => setValue('cnpj', cnpjMask(e.target.value))}
+            onChange={(e) =>
+              setValue('cnpj', cnpjMask(e.target.value), {
+                shouldDirty: true,
+              })
+            }
           />
 
           <Input
@@ -393,7 +514,9 @@ export function OngForm({
                 error={errors.address?.cep}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setValue('address.cep', cepMask(value));
+                  setValue('address.cep', cepMask(value), {
+                    shouldDirty: true,
+                  });
                   const cep = value.replace(/[^0-9]/g, '');
                   if (value === '') {
                     reset();
@@ -552,7 +675,7 @@ export function OngForm({
       <button
         type="submit"
         className="w-32 h-12 bg-green-500 flex items-center justify-center rounded hover:brightness-90 transition-colors mt-2 self-start disabled:bg-green-700 disabled:cursor-not-allowed disabled:hover:bg-green-700"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !isDirty}
       >
         {isSubmitting ? (
           <div className="w-5 h-5">

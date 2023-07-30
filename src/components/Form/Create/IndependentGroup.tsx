@@ -15,7 +15,8 @@ import { SocialMedia } from './OngForm';
 import { useRouter } from 'next/router';
 import { InputSocial } from '../InputSocial';
 import { toast } from 'react-hot-toast';
-import { setCookie } from 'nookies';
+import { Address } from '@/pages/organizacao';
+import { useState } from 'react';
 
 type Locale = {
   city: string;
@@ -113,6 +114,8 @@ export function IndependentGroupForm({
   isUpdateMode = false,
   independentGroupFormData,
 }: IndependentGroupFormProps) {
+  const [formData, setFormData] = useState(independentGroupFormData);
+
   const { getToken } = useAuth();
 
   const router = useRouter();
@@ -128,153 +131,290 @@ export function IndependentGroupForm({
     control,
   } = useForm<IndependentGroupFormData>({
     resolver: yupResolver(createOrgSchema),
-    defaultValues: independentGroupFormData ?? {
+    defaultValues: formData ?? {
       locales: [{ city: '', uf: '' }],
     },
   });
 
-  const { errors, isSubmitting } = formState;
+  const { errors, isSubmitting, isDirty } = formState;
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'locales',
   });
 
-  const handleCreate: SubmitHandler<IndependentGroupFormData> = async (
+  const handleFormData: SubmitHandler<IndependentGroupFormData> = async (
     values
   ) => {
-    try {
-      const token = await getToken({ template: 'jwt-patas-peludas' });
+    const token = await getToken({ template: 'jwt-patas-peludas' });
 
-      const org = {
-        avatar_url: null,
-        username: values.username,
-        name: values.name,
-        type,
-        cnpj: null,
-        email: values.email,
-        phone: values.phone,
-        description: values.description ?? null,
-        pix_code: values.bank.pix_code,
-      };
+    if (isUpdateMode) {
+      try {
+        const org = {
+          avatar_url: null,
+          username: values.username,
+          name: values.name,
+          type,
+          cnpj: null,
+          email: values.email,
+          phone: values.phone,
+          description: values.description ?? null,
+          pix_code: values.bank.pix_code,
+        };
 
-      await api.post(
-        '/orgs',
-        { ...org },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const addresses: Omit<Address, 'id' | 'created_at' | 'org_id'>[] = [];
+
+        if (values.locales.length > 0) {
+          await Promise.all(
+            values.locales.map(async (locale) => {
+              const address = {
+                cep: null,
+                street: null,
+                number: null,
+                complement: null,
+                neighborhood: null,
+                city: locale.city,
+                uf: locale.uf,
+              };
+
+              addresses.push(address);
+            })
+          );
         }
-      );
 
-      setCookie(undefined, 'pataspeludas.orgName', org.name, {
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
-        path: '/',
-      });
+        const socialMediasArray: SocialMedia[] = [];
 
-      setCookie(undefined, 'pataspeludas.orgType', org.type, {
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
-        path: '/',
-      });
-
-      await api.post(
-        '/teams',
-        { role: values.office },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        if (values.socialMedias?.instagramUrl) {
+          socialMediasArray.push({
+            type: 'INSTAGRAM',
+            url: `https://www.instagram.com/${values.socialMedias.instagramUrl}`,
+          });
         }
-      );
 
-      const socialMediasArray: SocialMedia[] = [];
+        if (values.socialMedias?.facebookUrl) {
+          socialMediasArray.push({
+            type: 'FACEBOOK',
+            url: `https://www.facebook.com/${values.socialMedias.facebookUrl}`,
+          });
+        }
 
-      if (values.socialMedias?.instagramUrl) {
-        socialMediasArray.push({
-          type: 'INSTAGRAM',
-          url: `https://www.instagram.com/${values.socialMedias.instagramUrl}`,
-        });
-      }
+        if (values.socialMedias?.twitterUrl) {
+          socialMediasArray.push({
+            type: 'TWITTER',
+            url: `https://www.twitter.com/${values.socialMedias.twitterUrl}`,
+          });
+        }
 
-      if (values.socialMedias?.facebookUrl) {
-        socialMediasArray.push({
-          type: 'FACEBOOK',
-          url: `https://www.facebook.com/${values.socialMedias.facebookUrl}`,
-        });
-      }
+        if (values.socialMedias?.linkedinUrl) {
+          socialMediasArray.push({
+            type: 'LINKEDIN',
+            url: `https://www.linkedin.com/in/${values.socialMedias.linkedinUrl}`,
+          });
+        }
 
-      if (values.socialMedias?.twitterUrl) {
-        socialMediasArray.push({
-          type: 'TWITTER',
-          url: `https://www.twitter.com/${values.socialMedias.twitterUrl}`,
-        });
-      }
-
-      if (values.socialMedias?.linkedinUrl) {
-        socialMediasArray.push({
-          type: 'LINKEDIN',
-          url: `https://www.linkedin.com/in/${values.socialMedias.linkedinUrl}`,
-        });
-      }
-
-      if (socialMediasArray.length > 0) {
-        await api.post(
-          '/social-medias',
-          { socialMedias: socialMediasArray },
+        const { data } = await api.put(
+          '/orgs',
+          {
+            ...org,
+            addresses,
+            socialMedias: socialMediasArray,
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-      }
 
-      if (values.locales.length > 0) {
-        await Promise.all(
-          values.locales.map(async (locale) => {
-            const address = {
-              cep: null,
-              street: null,
-              number: null,
-              complement: null,
-              neighborhood: null,
-              city: locale.city,
-              uf: locale.uf,
+        setFormData({
+          avatarUrl: data.org.avatar_url,
+          username: data.org.username,
+          name: data.org.name,
+          email: data.org.email,
+          phone: data.org.phone,
+          description: data.org.description,
+          office: 'remove',
+          bank: {
+            pix_code: data.org.pix_code,
+          },
+          socialMedias: {
+            instagramUrl: data.socialMedias
+              .find((social: SocialMedia) => social.type === 'INSTAGRAM')
+              ?.url.split('.com/')[1],
+            facebookUrl: data.socialMedias
+              .find((social: SocialMedia) => social.type === 'FACEBOOK')
+              ?.url.split('.com/')[1],
+            twitterUrl: data.socialMedias
+              .find((social: SocialMedia) => social.type === 'TWITTER')
+              ?.url.split('.com/')[1],
+            linkedinUrl: data.socialMedias
+              .find((social: SocialMedia) => social.type === 'LINKEDIN')
+              ?.url.split('.com/in/')[1],
+          },
+          locales: data.addresses.map((address: Address) => {
+            return {
+              city: address.city,
+              uf: address.uf,
             };
+          }),
+        });
 
-            await api.post(
-              '/addresses',
-              { ...address },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-          })
+        toast.custom(
+          (t) => (
+            <div
+              className={`bg-green-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+                t.visible ? 'animate-enter' : 'animate-leave'
+              }`}
+            >
+              <span className=" text-base font-semibold">
+                Alterações salvas. 😁
+              </span>
+              <p className="text-xs">Alterações salvas com sucesso.</p>
+            </div>
+          ),
+          { position: 'bottom-right' }
+        );
+      } catch {
+        toast.custom(
+          (t) => (
+            <div
+              className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+                t.visible ? 'animate-enter' : 'animate-leave'
+              }`}
+            >
+              <span className=" text-base font-semibold">
+                Não foi possível completar a ação 🙁
+              </span>
+              <p className="text-xs">
+                Se persistir o erro, entre em contato com o suporte.
+              </p>
+            </div>
+          ),
+          { position: 'bottom-right' }
         );
       }
+    } else {
+      try {
+        const org = {
+          avatar_url: null,
+          username: values.username,
+          name: values.name,
+          type,
+          cnpj: null,
+          email: values.email,
+          phone: values.phone,
+          description: values.description ?? null,
+          pix_code: values.bank.pix_code,
+        };
 
-      router.push('/');
-    } catch {
-      toast.custom(
-        (t) => (
-          <div
-            className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
-              t.visible ? 'animate-enter' : 'animate-leave'
-            }`}
-          >
-            <span className=" text-base font-semibold">
-              Não foi possível completar a ação 🙁
-            </span>
-            <p className="text-xs">
-              Se persistir o erro, entre em contato com o suporte.
-            </p>
-          </div>
-        ),
-        { position: 'bottom-right' }
-      );
+        await api.post(
+          '/orgs',
+          { ...org },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        await api.post(
+          '/teams',
+          { role: values.office },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const socialMediasArray: SocialMedia[] = [];
+
+        if (values.socialMedias?.instagramUrl) {
+          socialMediasArray.push({
+            type: 'INSTAGRAM',
+            url: `https://www.instagram.com/${values.socialMedias.instagramUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.facebookUrl) {
+          socialMediasArray.push({
+            type: 'FACEBOOK',
+            url: `https://www.facebook.com/${values.socialMedias.facebookUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.twitterUrl) {
+          socialMediasArray.push({
+            type: 'TWITTER',
+            url: `https://www.twitter.com/${values.socialMedias.twitterUrl}`,
+          });
+        }
+
+        if (values.socialMedias?.linkedinUrl) {
+          socialMediasArray.push({
+            type: 'LINKEDIN',
+            url: `https://www.linkedin.com/in/${values.socialMedias.linkedinUrl}`,
+          });
+        }
+
+        if (socialMediasArray.length > 0) {
+          await api.post(
+            '/social-medias',
+            { socialMedias: socialMediasArray },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        }
+
+        if (values.locales.length > 0) {
+          await Promise.all(
+            values.locales.map(async (locale) => {
+              const address = {
+                cep: null,
+                street: null,
+                number: null,
+                complement: null,
+                neighborhood: null,
+                city: locale.city,
+                uf: locale.uf,
+              };
+
+              await api.post(
+                '/addresses',
+                { ...address },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+            })
+          );
+        }
+
+        router.push('/');
+      } catch {
+        toast.custom(
+          (t) => (
+            <div
+              className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+                t.visible ? 'animate-enter' : 'animate-leave'
+              }`}
+            >
+              <span className=" text-base font-semibold">
+                Não foi possível completar a ação 🙁
+              </span>
+              <p className="text-xs">
+                Se persistir o erro, entre em contato com o suporte.
+              </p>
+            </div>
+          ),
+          { position: 'bottom-right' }
+        );
+      }
     }
   };
 
@@ -298,7 +438,7 @@ export function IndependentGroupForm({
   return (
     <form
       className="grid mobile:grid-cols-1 2xl:grid-cols-2 gap-6"
-      onSubmit={handleSubmit(handleCreate)}
+      onSubmit={handleSubmit(handleFormData)}
     >
       <fieldset className="border border-green-500 p-5 rounded flex flex-col gap-4">
         <legend className="text-base text-white px-3 py-2 bg-green-600 rounded mb-2">
@@ -330,7 +470,11 @@ export function IndependentGroupForm({
             {...register('phone')}
             error={errors.phone}
             isRequired
-            onChange={(e) => setValue('phone', celularMask(e.target.value))}
+            onChange={(e) =>
+              setValue('phone', celularMask(e.target.value), {
+                shouldDirty: true,
+              })
+            }
           />
         </div>
 
@@ -513,7 +657,7 @@ export function IndependentGroupForm({
       <button
         type="submit"
         className="w-32 h-12 bg-green-500 flex items-center justify-center rounded hover:brightness-90 transition-colors mt-2 self-start disabled:bg-green-700 disabled:cursor-not-allowed disabled:hover:bg-green-700"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !isDirty}
       >
         {isSubmitting ? (
           <div className="w-5 h-5">
