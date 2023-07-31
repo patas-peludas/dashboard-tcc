@@ -445,7 +445,7 @@ export function IndependentGroupForm({
           Informações básicas
         </legend>
 
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           <Input
             label="Nome de usuário da organização"
             placeholder="minhaorganizacao"
@@ -478,7 +478,7 @@ export function IndependentGroupForm({
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-4">
           <Input
             label="E-mail da organização"
             placeholder="minhaorganizacao@gmail.com"
@@ -488,7 +488,7 @@ export function IndependentGroupForm({
           />
 
           {email && (
-            <div className="mt-9">
+            <div className="xs:mt-0 lg:mt-9">
               <Checkbox
                 label="Usar o mesmo email do meu usuário"
                 name="use-same-email"
@@ -505,7 +505,7 @@ export function IndependentGroupForm({
         </div>
 
         {!isUpdateMode && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-4">
             <Input
               label="Seu cargo na organização"
               placeholder="Presidente"
@@ -524,7 +524,7 @@ export function IndependentGroupForm({
         />
       </fieldset>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid xs:grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
           <fieldset className="border border-green-500 p-5 rounded flex flex-col gap-4 h-max">
             <legend className="text-base text-white px-3 py-2 bg-green-600 rounded mb-2">

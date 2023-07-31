@@ -34,7 +34,7 @@ module.exports = {
         sans: ['DM Sans', 'sans-serif'],
       },
       screens: {
-        mobile: '320px',
+        xs: '320px',
       },
       keyframes: {
         overlayShow: {

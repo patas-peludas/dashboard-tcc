@@ -26,7 +26,7 @@ export default function CreateOrEnter() {
       </Head>
       <Layout title="Crie ou entre em uma organização" isLocked>
         <div className="w-max">
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid xs:grid-cols-1 lg:grid-cols-2 gap-8">
             <Link
               href="/organizacao/criar"
               className="w-44 h-44 p-3 border-gray-400 text-zinc-600 border hover:bg-green-300 hover:text-zinc-50 hover:border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 text-lg uppercase tracking-wider font-medium  shadow"

@@ -25,7 +25,6 @@ import { CircleDollarSign, Dog, HelpingHand } from 'lucide-react';
 import { TopTable } from '@/components/Table/TopTable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TeamMembers } from '@/components/TeamMembers';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 
@@ -187,7 +186,7 @@ export default function Dashboard() {
         </div>
 
         <div className="w-full my-5">
-          <TeamMembers members={members} />
+          {/* <TeamMembers members={members} /> */}
         </div>
       </Layout>
     </>

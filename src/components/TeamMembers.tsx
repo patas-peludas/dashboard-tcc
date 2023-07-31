@@ -182,7 +182,7 @@ export function TeamMembers({ members, userId, role }: TeamMembersProps) {
         *Os administradores estão destacados
       </span>
 
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid xs:grid-cols-1 lg:grid-cols-3 gap-4">
         {approveds.map((member) => (
           <div
             key={member.id}

@@ -4,6 +4,8 @@ import '../styles/quill.snow.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ptBR } from '@clerk/localizations';
 import { Toaster } from 'react-hot-toast';
+import { SidebarProvider } from '@/contexts/SidebarContext';
+import { BreakpointProvider } from '@/contexts/BreakpointContext';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -17,7 +19,11 @@ export default function App({ Component, pageProps }: AppProps) {
       }}
       {...pageProps}
     >
-      <Component {...pageProps} />
+      <BreakpointProvider>
+        <SidebarProvider>
+          <Component {...pageProps} />
+        </SidebarProvider>
+      </BreakpointProvider>
       <Toaster />
     </ClerkProvider>
   );

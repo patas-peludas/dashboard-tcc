@@ -108,7 +108,7 @@ export default function Enter() {
         <title>Entrar em uma organização | Patas Peludas</title>
       </Head>
       <Layout title="Entrar em uma organização" isLocked>
-        <div className="w-[600px]">
+        <div className="xs:w-full lg:w-[600px]">
           <fieldset className="border border-green-500 p-5 rounded flex flex-col gap-4 mb-6 w-full">
             <legend className="text-base text-white px-3 py-2 bg-green-600 rounded mb-2">
               Pesquisar Organização
@@ -165,7 +165,7 @@ export default function Enter() {
                             {org?.name}
                           </span>
 
-                          <div className="mt-4 flex items-end gap-4">
+                          <div className="mt-4 flex xs:flex-col lg:flex-row lg:items-end gap-4">
                             <div className="flex-1">
                               <Input
                                 name="office"
