@@ -18,7 +18,7 @@ export default function WaitConfirmation({ orgName }: WaitConfirmationProps) {
         <title>Aguardando Confirmação | Patas Peludas</title>
       </Head>
       <Layout title="Aguardando Confirmação" isLocked>
-        <div className="flex items-start mx-auto gap-2 h-max w-[800px]">
+        <div className="flex xs:flex-col lg:flex-row items-start mx-auto gap-2 h-max xs:w-full lg:w-[800px]">
           <Image
             src={waitImg}
             alt="Ilustração de uma pessoa esperando com uma ampulheta"
@@ -31,7 +31,7 @@ export default function WaitConfirmation({ orgName }: WaitConfirmationProps) {
               sua solicitação.
             </p>
 
-            <p className="text-sm mt-auto text-green-700">
+            <p className="text-sm font-medium mt-auto text-green-700">
               Para agilizar o processo de confirmação, nós recomendamos que
               entre em contato direto com a organização.
             </p>
