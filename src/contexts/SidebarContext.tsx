@@ -17,15 +17,17 @@ const SidebarContext = createContext({} as SidebarContextData);
 export function SidebarProvider({ children }: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState<boolean | null>(null);
 
-  const { greaterThan } = useBreakpoint();
+  const { greaterThan, breakpoint } = useBreakpoint();
 
   useEffect(() => {
-    if (greaterThan('lg')) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
+    if (breakpoint) {
+      if (breakpoint === 'lg' || greaterThan('lg')) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
     }
-  }, []);
+  }, [breakpoint]);
 
   return (
     <SidebarContext.Provider

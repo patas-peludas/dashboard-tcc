@@ -4,8 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 type BreakpointContextData = {
-  greaterThan: (targetBreakpoint: Breakpoint) => boolean;
-  lessThan: (targetBreakpoint: Breakpoint) => boolean;
+  breakpoint: Breakpoint | null;
+  greaterThan: (targetBreakpoint: Breakpoint) => boolean | null;
+  lessThan: (targetBreakpoint: Breakpoint) => boolean | null;
 };
 
 type BreakpointProviderProps = {
@@ -15,7 +16,7 @@ type BreakpointProviderProps = {
 const BreakpointContext = createContext({} as BreakpointContextData);
 
 export function BreakpointProvider({ children }: BreakpointProviderProps) {
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>('md');
+  const [breakpoint, setBreakpoint] = useState<Breakpoint | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,22 +69,33 @@ export function BreakpointProvider({ children }: BreakpointProviderProps) {
   };
 
   const greaterThan = (targetBreakpoint: Breakpoint) => {
-    const targetIndex = Object.keys(breakpoints).indexOf(targetBreakpoint);
-    const currentBreakpointIndex = Object.keys(breakpoints).indexOf(breakpoint);
+    if (breakpoint) {
+      const targetIndex = Object.keys(breakpoints).indexOf(targetBreakpoint);
+      const currentBreakpointIndex =
+        Object.keys(breakpoints).indexOf(breakpoint);
 
-    return currentBreakpointIndex > targetIndex;
+      return currentBreakpointIndex > targetIndex;
+    } else {
+      return null;
+    }
   };
 
   const lessThan = (targetBreakpoint: Breakpoint) => {
-    const targetIndex = Object.keys(breakpoints).indexOf(targetBreakpoint);
-    const currentBreakpointIndex = Object.keys(breakpoints).indexOf(breakpoint);
+    if (breakpoint) {
+      const targetIndex = Object.keys(breakpoints).indexOf(targetBreakpoint);
+      const currentBreakpointIndex =
+        Object.keys(breakpoints).indexOf(breakpoint);
 
-    return currentBreakpointIndex < targetIndex;
+      return currentBreakpointIndex < targetIndex;
+    } else {
+      return null;
+    }
   };
 
   return (
     <BreakpointContext.Provider
       value={{
+        breakpoint,
         greaterThan,
         lessThan,
       }}
