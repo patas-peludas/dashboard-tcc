@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/patas-peludas/dashboard/compare/v0.0.2...v1.0.0) (2023-08-01)
+
+
+### ✨ Features
+
+* **project:** add user authentication and create or enter org ([0308dac](https://github.com/patas-peludas/dashboard/commit/0308dac5f3f276b7d9f6f049f4032804de1febe8))
+
 ### [0.0.3](https://github.com/patas-peludas/dashboard/compare/v0.0.2...v0.0.3) (2023-07-23)
 
 
