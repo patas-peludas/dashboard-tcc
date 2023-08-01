@@ -25,8 +25,8 @@ import { CircleDollarSign, Dog, HelpingHand } from 'lucide-react';
 import { TopTable } from '@/components/Table/TopTable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TeamMembers } from '@/components/TeamMembers';
 import Head from 'next/head';
+import { GetServerSideProps } from 'next';
 
 const dataOne = [
   { month: '2023-01-01', donations: 1000, sponsorships: 500 },
@@ -142,7 +142,7 @@ export const contributionTwo = {
   contributions,
 };
 
-export default function Home() {
+export default function Dashboard() {
   return (
     <>
       <Head>
@@ -186,9 +186,48 @@ export default function Home() {
         </div>
 
         <div className="w-full my-5">
-          <TeamMembers members={members} />
+          {/* <TeamMembers members={members} /> */}
         </div>
       </Layout>
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    redirect: {
+      destination: '/organizacao',
+      permanent: false,
+    },
+  };
+
+  // const { userId } = getAuth(ctx.req);
+
+  // if (!userId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/sign-in',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // const user = await clerkClient.users.getUser(userId);
+
+  // const role = user?.publicMetadata.role;
+
+  // const orgId = user?.publicMetadata.orgId;
+
+  // if (role !== 'ADMIN' || !orgId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/organizacao/criar-ou-entrar',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // return {
+  //   props: {},
+  // };
+};

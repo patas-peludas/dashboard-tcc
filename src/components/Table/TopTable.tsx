@@ -19,10 +19,12 @@ export function TopTable({ title, link, tableItems, contributions }: TopTable) {
           {title}
         </h4>
 
-        <Link href={link} passHref>
-          <a className="text-green-300 text-sm font-medium leading-6 tracking-tight py-1 px-2 bg-zinc-100 rounded-[70px]">
-            Ver todos
-          </a>
+        <Link
+          href={link}
+          passHref
+          className="text-green-300 text-sm font-medium leading-6 tracking-tight py-1 px-2 bg-zinc-100 rounded-[70px]"
+        >
+          Ver todos
         </Link>
       </div>
 

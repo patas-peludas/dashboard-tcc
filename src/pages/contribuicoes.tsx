@@ -2,6 +2,7 @@ import { Layout } from '@/components/Layout';
 import { DollarSign, HelpingHand } from 'lucide-react';
 import { ContributionsTable } from '@/components/Table/ContributionsTable';
 import Head from 'next/head';
+import { GetServerSideProps } from 'next';
 
 const contributions = [
   {
@@ -130,3 +131,42 @@ export default function Contributions() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    redirect: {
+      destination: '/organizacao',
+      permanent: false,
+    },
+  };
+
+  // const { userId } = getAuth(ctx.req);
+
+  // if (!userId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/sign-in',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // const user = await clerkClient.users.getUser(userId);
+
+  // const role = user?.publicMetadata.role;
+
+  // const orgId = user?.publicMetadata.orgId;
+
+  // if (role !== 'ADMIN' || !orgId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/organizacao/criar-ou-entrar',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // return {
+  //   props: {},
+  // };
+};

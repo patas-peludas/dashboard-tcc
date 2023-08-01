@@ -1,5 +1,6 @@
 import { Layout } from '@/components/Layout';
 import { PetsTable } from '@/components/Table/PetsTable';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 
 const pets = [
@@ -127,3 +128,42 @@ export default function Pets() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    redirect: {
+      destination: '/organizacao',
+      permanent: false,
+    },
+  };
+
+  // const { userId } = getAuth(ctx.req);
+
+  // if (!userId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/sign-in',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // const user = await clerkClient.users.getUser(userId);
+
+  // const role = user?.publicMetadata.role;
+
+  // const orgId = user?.publicMetadata.orgId;
+
+  // if (role !== 'ADMIN' || !orgId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/organizacao/criar-ou-entrar',
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // return {
+  //   props: {},
+  // };
+};
