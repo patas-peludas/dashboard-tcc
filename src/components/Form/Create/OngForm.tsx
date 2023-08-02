@@ -99,6 +99,7 @@ export function OngForm({
 }: OngFormProps) {
   const [formData, setFormData] = useState(ongFormData);
   const [disableAddress, setDisableAddress] = useState(true);
+  const [showControllAddress, setShowControllAddress] = useState(false);
 
   const { getToken } = useAuth();
 
@@ -384,6 +385,8 @@ export function OngForm({
       } catch {
         setDisableAddress(false);
       }
+    } finally {
+      setShowControllAddress(true);
     }
   }
 
@@ -547,6 +550,20 @@ export function OngForm({
                 </a>
               </div>
             </div>
+
+            {showControllAddress && (
+              <Checkbox
+                label="Corrigir informações do endereço"
+                name="controll-user-address"
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setDisableAddress(false);
+                  } else {
+                    setDisableAddress(true);
+                  }
+                }}
+              />
+            )}
 
             <Input
               label="Endereço da organização"
