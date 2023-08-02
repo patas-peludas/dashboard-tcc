@@ -11,6 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ClerkProvider
       localization={ptBR}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
       appearance={{
         elements: {
           formButtonPrimary:
