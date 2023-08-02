@@ -98,6 +98,7 @@ export function OngForm({
   ongFormData,
 }: OngFormProps) {
   const [formData, setFormData] = useState(ongFormData);
+  const [disableAddress, setDisableAddress] = useState(true);
 
   const { getToken } = useAuth();
 
@@ -371,12 +372,18 @@ export function OngForm({
       setValue('address.neighborhood', data.neighborhood);
       setValue('address.street', data.street);
     } catch {
-      resetField('address.city');
-      resetField('address.uf');
-      resetField('address.neighborhood');
-      resetField('address.street');
-      resetField('address.number');
-      resetField('address.complement');
+      try {
+        const { data } = await axios.get<AxiosAddressProps>(
+          `https://brasilapi.com.br/api/cep/v1/${value}`
+        );
+
+        setValue('address.city', data.city);
+        setValue('address.uf', data.state);
+        setValue('address.neighborhood', data.neighborhood);
+        setValue('address.street', data.street);
+      } catch {
+        setDisableAddress(false);
+      }
     }
   }
 
@@ -546,7 +553,7 @@ export function OngForm({
               placeholder="Beco Domingos Monteiro"
               {...register('address.street')}
               error={errors.address?.street}
-              disabled
+              disabled={disableAddress}
             />
 
             <div className="flex items-center gap-4">
@@ -574,7 +581,7 @@ export function OngForm({
                   placeholder="AM"
                   {...register('address.uf')}
                   error={errors.address?.uf}
-                  disabled
+                  disabled={disableAddress}
                 />
               </div>
             </div>
@@ -585,14 +592,14 @@ export function OngForm({
                 placeholder="São Francisco"
                 {...register('address.neighborhood')}
                 error={errors.address?.neighborhood}
-                disabled
+                disabled={disableAddress}
               />
               <Input
                 label="Cidade"
                 placeholder="Manaus"
                 {...register('address.city')}
                 error={errors.address?.city}
-                disabled
+                disabled={disableAddress}
               />
             </div>
           </fieldset>
