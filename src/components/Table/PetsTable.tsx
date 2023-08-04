@@ -1,18 +1,13 @@
+import { Pet } from '@/pages/pets';
 import { FileEdit, HelpingHand, MinusCircle, Plus, Search } from 'lucide-react';
 
 type PetsTableProps = {
-  pets: {
-    id: string;
-    avatarURL: string;
-    name: string;
-    type: string;
-    age: string;
-    size: string;
-    gender: string;
-  }[];
+  pets: Pet[];
+  currentPage: number;
+  totalPages: number;
 };
 
-export function PetsTable({ pets }: PetsTableProps) {
+export function PetsTable({ pets, currentPage, totalPages }: PetsTableProps) {
   return (
     <div className="w-max bg-white rounded-[20px] p-6">
       <div className="mb-12 flex items-center justify-between w-full">
@@ -55,12 +50,16 @@ export function PetsTable({ pets }: PetsTableProps) {
           {pets.map((pet) => (
             <tr key={pet.id}>
               <td className="flex items-center gap-2 text-green-700 text-sm font-medium tracking-tight leading-6 p-2 border-solid border-r border-r-gray-400">
-                <img
-                  className="w-8 h-8 rounded-full"
-                  loading="lazy"
-                  src={pet.avatarURL}
-                  alt={pet.name}
-                />
+                {pet.cover_url ? (
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    loading="lazy"
+                    src={pet.cover_url}
+                    alt={pet.name}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-zinc-200" />
+                )}
                 {pet.name}
               </td>
 
@@ -101,7 +100,9 @@ export function PetsTable({ pets }: PetsTableProps) {
 
       <div className="w-full mt-6 flex items-center justify-between">
         <div>
-          <span>1 - 2</span>
+          <span>
+            {currentPage} - {totalPages}
+          </span>
         </div>
 
         <div className="flex items-center gap-2">

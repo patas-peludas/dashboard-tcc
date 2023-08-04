@@ -173,18 +173,22 @@ export const getServerSideProps: GetServerSideProps = async (
           pix_code: data.org.pix_code,
         },
         socialMedias: {
-          instagramUrl: data.socialMedias
-            .find((social) => social.type === 'INSTAGRAM')
-            ?.url.split('.com/')[1],
-          facebookUrl: data.socialMedias
-            .find((social) => social.type === 'FACEBOOK')
-            ?.url.split('.com/')[1],
-          twitterUrl: data.socialMedias
-            .find((social) => social.type === 'TWITTER')
-            ?.url.split('.com/')[1],
-          linkedinUrl: data.socialMedias
-            .find((social) => social.type === 'LINKEDIN')
-            ?.url.split('.com/in/')[1],
+          instagramUrl:
+            data.socialMedias
+              .find((social) => social.type === 'INSTAGRAM')
+              ?.url.split('.com/')[1] ?? null,
+          facebookUrl:
+            data.socialMedias
+              .find((social) => social.type === 'FACEBOOK')
+              ?.url.split('.com/')[1] ?? null,
+          twitterUrl:
+            data.socialMedias
+              .find((social) => social.type === 'TWITTER')
+              ?.url.split('.com/')[1] ?? null,
+          linkedinUrl:
+            data.socialMedias
+              .find((social) => social.type === 'LINKEDIN')
+              ?.url.split('.com/in/')[1] ?? null,
         },
         address: data.addresses.find((address) => address.org_id === orgId)!,
       };
@@ -203,18 +207,22 @@ export const getServerSideProps: GetServerSideProps = async (
           pix_code: data.org.pix_code,
         },
         socialMedias: {
-          instagramUrl: data.socialMedias
-            .find((social) => social.type === 'INSTAGRAM')
-            ?.url.split('.com/')[1],
-          facebookUrl: data.socialMedias
-            .find((social) => social.type === 'FACEBOOK')
-            ?.url.split('.com/')[1],
-          twitterUrl: data.socialMedias
-            .find((social) => social.type === 'TWITTER')
-            ?.url.split('.com/')[1],
-          linkedinUrl: data.socialMedias
-            .find((social) => social.type === 'LINKEDIN')
-            ?.url.split('.com/in/')[1],
+          instagramUrl:
+            data.socialMedias
+              .find((social) => social.type === 'INSTAGRAM')
+              ?.url.split('.com/')[1] ?? null,
+          facebookUrl:
+            data.socialMedias
+              .find((social) => social.type === 'FACEBOOK')
+              ?.url.split('.com/')[1] ?? null,
+          twitterUrl:
+            data.socialMedias
+              .find((social) => social.type === 'TWITTER')
+              ?.url.split('.com/')[1] ?? null,
+          linkedinUrl:
+            data.socialMedias
+              .find((social) => social.type === 'LINKEDIN')
+              ?.url.split('.com/in/')[1] ?? null,
         },
         locales: data.addresses.map((address) => {
           return {

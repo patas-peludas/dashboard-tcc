@@ -10,7 +10,7 @@ import { Spinner } from './Spinner';
 type LayoutProps = {
   title: string;
   isLocked?: boolean;
-  orgName?: string;
+  orgName: string;
   children: ReactNode;
 };
 

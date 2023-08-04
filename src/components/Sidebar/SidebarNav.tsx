@@ -1,29 +1,29 @@
 import { NavLink } from './NavLink';
 import { NavSection } from './NavSection';
-import { CheckCircle2, ShieldQuestion, Users } from 'lucide-react';
+import { CheckCircle2, Dog, ShieldQuestion, Users } from 'lucide-react';
 
 type SidebarNavProps = {
   isLocked?: boolean;
   orgName?: string;
 };
 
-// const menuItems = [
-//   {
-//     Icon: LayoutDashboard,
-//     name: 'Dashboard',
-//     link: '/',
-//   },
-//   {
-//     Icon: Dog,
-//     name: 'Pets',
-//     link: '/pets',
-//   },
-//   {
-//     Icon: HeartHandshake,
-//     name: 'Contribuições',
-//     link: '/contribuicoes',
-//   },
-// ];
+const menuItems = [
+  // {
+  //   Icon: LayoutDashboard,
+  //   name: 'Dashboard',
+  //   link: '/',
+  // },
+  {
+    Icon: Dog,
+    name: 'Pets',
+    href: '/pets',
+  },
+  // {
+  //   Icon: HeartHandshake,
+  //   name: 'Contribuições',
+  //   link: '/contribuicoes',
+  // },
+];
 
 const platformItem = [
   {
@@ -35,15 +35,15 @@ const platformItem = [
 export function SidebarNav({ isLocked, orgName }: SidebarNavProps) {
   return (
     <div className="mt-8 pl-8 w-full flex flex-col items-start justify-start gap-8">
-      {/* {!isLocked && (
+      {!isLocked && (
         <NavSection title="MENU">
           {menuItems.map((item) => (
-            <NavLink key={item.link} link={item.link} Icon={item.Icon}>
+            <NavLink key={item.href} href={item.href} Icon={item.Icon}>
               {item.name}
             </NavLink>
           ))}
         </NavSection>
-      )} */}
+      )}
 
       <NavSection title="Organização">
         {!isLocked && (
