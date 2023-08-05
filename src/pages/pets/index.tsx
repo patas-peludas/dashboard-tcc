@@ -6,9 +6,10 @@ import { clerkClient } from '@clerk/nextjs';
 import { getAuth } from '@clerk/nextjs/server';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { Org } from './organizacao';
-import catDogImg from '../assets/cat-dog.svg';
+import { Org } from '../organizacao';
+import catDogImg from '../../assets/cat-dog.svg';
 import { Cat } from 'lucide-react';
+import Link from 'next/link';
 
 export type Pet = {
   id: string;
@@ -63,10 +64,13 @@ export default function Pets({
                 Nenhum pet cadastrado ainda...
               </h1>
 
-              <button className="bg-green-600 text-lg font-medium leading-6 tracking-tight rounded-lg py-3 px-4 text-white flex items-center gap-2 w-max hover:bg-green-700 transition-all">
+              <Link
+                href="/pets/cadastrar"
+                className="bg-green-600 text-lg font-medium leading-6 tracking-tight rounded-lg py-3 px-4 text-white flex items-center gap-2 w-max hover:bg-green-700 transition-all"
+              >
                 <Cat className="w-6 h-6" />
                 Cadastrar agora
-              </button>
+              </Link>
             </div>
           </div>
         )}
