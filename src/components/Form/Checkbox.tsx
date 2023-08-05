@@ -1,11 +1,18 @@
-import { InputHTMLAttributes } from 'react';
+import {
+  ForwardRefRenderFunction,
+  InputHTMLAttributes,
+  forwardRef,
+} from 'react';
 
 type CheckboxProps = {
   name: string;
   label: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-export function Checkbox({ name, label, ...rest }: CheckboxProps) {
+const CheckboxBase: ForwardRefRenderFunction<
+  HTMLInputElement,
+  CheckboxProps
+> = ({ name, label, ...rest }, ref) => {
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -13,6 +20,7 @@ export function Checkbox({ name, label, ...rest }: CheckboxProps) {
           name={name}
           id={name}
           type="checkbox"
+          ref={ref}
           {...rest}
           className="rounded border-solid border-leaf w-[18px] h-[18px] text-leaf focus:ring-leaf"
         />
@@ -25,4 +33,6 @@ export function Checkbox({ name, label, ...rest }: CheckboxProps) {
       </div>
     </div>
   );
-}
+};
+
+export const Checkbox = forwardRef(CheckboxBase);

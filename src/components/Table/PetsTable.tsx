@@ -1,5 +1,6 @@
 import { Pet } from '@/pages/pets';
-import { FileEdit, HelpingHand, MinusCircle, Plus, Search } from 'lucide-react';
+import { Dog, FileEdit, HelpingHand, MinusCircle, Search } from 'lucide-react';
+import Link from 'next/link';
 
 type PetsTableProps = {
   pets: Pet[];
@@ -11,10 +12,13 @@ export function PetsTable({ pets, currentPage, totalPages }: PetsTableProps) {
   return (
     <div className="w-max bg-white rounded-[20px] p-6">
       <div className="mb-12 flex items-center justify-between w-full">
-        <button className="bg-green-600 text-sm font-medium leading-6 tracking-tight rounded-lg py-2 px-4 text-white flex items-center gap-1">
-          <Plus className="w-5 h-5" />
-          Adicionar
-        </button>
+        <Link
+          href="/pets/cadastrar"
+          className="bg-green-600 text-lg font-medium leading-6 tracking-tight rounded-lg py-3 px-4 text-white flex items-center gap-2 w-max hover:bg-green-700 transition-all"
+        >
+          <Dog className="w-6 h-6" />
+          Cadastrar agora
+        </Link>
 
         <div className="w-[214px] h-[41px] flex items-center gap-3 bg-white focus-within:ring-1 focus-within:ring-leaf rounded-[49px] border-solid border border-leaf px-3 ">
           <Search className="w-4 h-4" />

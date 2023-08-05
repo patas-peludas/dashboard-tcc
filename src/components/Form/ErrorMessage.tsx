@@ -3,5 +3,9 @@ type ErrorMessageProps = {
 };
 
 export function ErrorMessage({ message }: ErrorMessageProps) {
-  return <span className="text-xs font-medium text-red-500">{message}</span>;
+  return (
+    <span className="flex text-xs font-medium leading-snug text-red-500 mt-1">
+      {message}
+    </span>
+  );
 }

@@ -1,6 +1,14 @@
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+const PetsTable = dynamic(
+  () =>
+    import('@/components/Table/PetsTable').then((module) => module.PetsTable),
+  {
+    ssr: false,
+  }
+);
+
 import { Layout } from '@/components/Layout';
-import { PetsTable } from '@/components/Table/PetsTable';
 import { api } from '@/services/api';
 import { clerkClient } from '@clerk/nextjs';
 import { getAuth } from '@clerk/nextjs/server';
@@ -15,7 +23,7 @@ export type Pet = {
   id: string;
   cover_url: string | null;
   name: string;
-  description: string;
+  description: string | null;
   type: 'CAT' | 'DOG';
   age: 'BABY' | 'YOUNG' | 'ADULT' | 'SENIOR';
   size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'EXTRA_LARGE';

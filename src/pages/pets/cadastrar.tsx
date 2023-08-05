@@ -4,21 +4,23 @@ import { clerkClient } from '@clerk/nextjs';
 import { getAuth } from '@clerk/nextjs/server';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { Org } from '../organizacao';
+import { Address, Org, SocialMedia } from '../organizacao';
 import { RegisterPetForm } from '@/components/Form/RegisterPetForm';
+import { Locale } from '@/components/Form/Create/IndependentGroup';
 
 type RegisterPetProps = {
   orgName: string;
+  locales: Locale[];
 };
 
-export default function RegisterPet({ orgName }: RegisterPetProps) {
+export default function RegisterPet({ orgName, locales }: RegisterPetProps) {
   return (
     <>
       <Head>
         <title>Cadastrar Pet | Patas Peludas</title>
       </Head>
       <Layout title="Cadastrar Pet" orgName={orgName}>
-        <RegisterPetForm />
+        <RegisterPetForm locales={locales} />
       </Layout>
     </>
   );
@@ -54,13 +56,21 @@ export const getServerSideProps: GetServerSideProps = async (
   }
 
   try {
-    const responseOrg = await api.get<{
+    const { data } = await api.get<{
       org: Org;
-    }>(`/orgs/${orgId}`, { params: { by: 'ID' } });
+      socialMedias: SocialMedia[];
+      addresses: Address[];
+    }>(`/orgs/${orgId}/complete`, { params: { by: 'ID' } });
 
     return {
       props: {
-        orgName: responseOrg.data.org.name,
+        orgName: data.org.name,
+        locales: data.addresses.map((address) => {
+          return {
+            city: address.city,
+            uf: address.uf,
+          };
+        }),
       },
     };
   } catch {

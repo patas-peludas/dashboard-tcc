@@ -18,7 +18,7 @@ import { toast } from 'react-hot-toast';
 import { Address } from '@/pages/organizacao';
 import { useState } from 'react';
 
-type Locale = {
+export type Locale = {
   city: string;
   uf: string;
 };
