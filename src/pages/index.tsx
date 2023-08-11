@@ -1,56 +1,52 @@
-import dynamic from 'next/dynamic';
-const ContributionsLineChart = dynamic(
-  () =>
-    import('@/components/Chart/ContributionsLineChart').then(
-      (module) => module.ContributionsLineChart
-    ),
-  {
-    ssr: false,
-  }
-);
+// import dynamic from 'next/dynamic';
+// const ContributionsLineChart = dynamic(
+//   () =>
+//     import('@/components/Chart/ContributionsLineChart').then(
+//       (module) => module.ContributionsLineChart
+//     ),
+//   {
+//     ssr: false,
+//   }
+// );
 
-const AdoptionsLineChart = dynamic(
-  () =>
-    import('@/components/Chart/AdoptionsLineChart').then(
-      (module) => module.AdoptionsLineChart
-    ),
-  {
-    ssr: false,
-  }
-);
+// const AdoptionsLineChart = dynamic(
+//   () =>
+//     import('@/components/Chart/AdoptionsLineChart').then(
+//       (module) => module.AdoptionsLineChart
+//     ),
+//   {
+//     ssr: false,
+//   }
+// );
 
-import { CardInfo } from '@/components/CardInfo';
-import { Layout } from '@/components/Layout';
-import { CircleDollarSign, Dog, HelpingHand } from 'lucide-react';
-import { TopTable } from '@/components/Table/TopTable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 
-const dataOne = [
-  { month: '2023-01-01', donations: 1000, sponsorships: 500 },
-  { month: '2023-02-01', donations: 1500, sponsorships: 800 },
-  { month: '2023-03-01', donations: 2000, sponsorships: 1200 },
-  { month: '2023-04-01', donations: 2000, sponsorships: 1200 },
-  { month: '2023-05-01', donations: 2000, sponsorships: 1200 },
-  { month: '2023-06-01', donations: 2000, sponsorships: 1200 },
-  { month: '2023-07-01', donations: 2000, sponsorships: 1200 },
-  { month: '2023-08-01', donations: 2000, sponsorships: 1200 },
-  // Adicione mais dados para outros meses e anos, se necessário
-];
+// const dataOne = [
+//   { month: '2023-01-01', donations: 1000, sponsorships: 500 },
+//   { month: '2023-02-01', donations: 1500, sponsorships: 800 },
+//   { month: '2023-03-01', donations: 2000, sponsorships: 1200 },
+//   { month: '2023-04-01', donations: 2000, sponsorships: 1200 },
+//   { month: '2023-05-01', donations: 2000, sponsorships: 1200 },
+//   { month: '2023-06-01', donations: 2000, sponsorships: 1200 },
+//   { month: '2023-07-01', donations: 2000, sponsorships: 1200 },
+//   { month: '2023-08-01', donations: 2000, sponsorships: 1200 },
+//   // Adicione mais dados para outros meses e anos, se necessário
+// ];
 
-const dataTwo = [
-  { month: '2023-01-01', adoptions: 1 },
-  { month: '2023-02-01', adoptions: 15 },
-  { month: '2023-03-01', adoptions: 20 },
-  { month: '2023-04-01', adoptions: 20 },
-  { month: '2023-05-01', adoptions: 20 },
-  { month: '2023-06-01', adoptions: 20 },
-  { month: '2023-07-01', adoptions: 20 },
-  { month: '2023-08-01', adoptions: 20 },
-  // Adicione mais dados para outros meses e anos, se necessário
-];
+// const dataTwo = [
+//   { month: '2023-01-01', adoptions: 1 },
+//   { month: '2023-02-01', adoptions: 15 },
+//   { month: '2023-03-01', adoptions: 20 },
+//   { month: '2023-04-01', adoptions: 20 },
+//   { month: '2023-05-01', adoptions: 20 },
+//   { month: '2023-06-01', adoptions: 20 },
+//   { month: '2023-07-01', adoptions: 20 },
+//   { month: '2023-08-01', adoptions: 20 },
+//   // Adicione mais dados para outros meses e anos, se necessário
+// ];
 
 const contributions = [
   {
@@ -148,7 +144,7 @@ export default function Dashboard() {
       <Head>
         <title>Dashboard | Patas Peludas</title>
       </Head>
-      <Layout title="Dashboard">
+      {/* <Layout title="Dashboard">
         <div className="flex items-start gap-5">
           <CardInfo
             Icon={CircleDollarSign}
@@ -186,9 +182,9 @@ export default function Dashboard() {
         </div>
 
         <div className="w-full my-5">
-          {/* <TeamMembers members={members} /> */}
+          <TeamMembers members={members} />
         </div>
-      </Layout>
+      </Layout> */}
     </>
   );
 }

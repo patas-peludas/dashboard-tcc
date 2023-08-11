@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Fieldset } from './Fieldset';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Input } from './Input';
 import { Select } from './Select';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TextArea } from './TextArea';
 import { Locale } from './Create/IndependentGroup';
 import { PetDropzone } from '../Upload/PetDropzone';
@@ -15,13 +16,18 @@ import { Checkbox } from './Checkbox';
 import { api } from '@/services/api';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import { Pet } from '@/pages/pets';
+import axios, { AxiosError } from 'axios';
 
 export type DropzoneFile = {
-  preview: string;
+  urlPathFromServer: string | null;
 } & File;
 
 type RegisterPetFormProps = {
   locales: Locale[];
+  pet?: Pet;
+  petPicturesUrl?: string[];
+  isUpdateMode?: boolean;
 };
 
 export type RegisterPetFormData = {
@@ -45,19 +51,95 @@ const registerPetSchema = yup.object().shape({
   is_up_for_adoption: yup.boolean().required('Informação do pet obrigatória.'),
 });
 
-export function RegisterPetForm({ locales }: RegisterPetFormProps) {
-  const [type, setType] = useState<'DOG' | 'CAT' | null>(null);
+export const LIMIT_IMAGE_QUANTITY = 6;
+
+export function RegisterPetForm({
+  locales,
+  pet,
+  petPicturesUrl,
+  isUpdateMode = false,
+}: RegisterPetFormProps) {
+  const [type, setType] = useState<'DOG' | 'CAT' | null>(pet?.type ?? null);
   const [files, setFiles] = useState<DropzoneFile[]>([]);
-  const [cover, setCover] = useState<DropzoneFile>();
+  const [cover, setCover] = useState<DropzoneFile | null>(null);
 
   const { getToken } = useAuth();
   const router = useRouter();
 
   const { register, formState, handleSubmit } = useForm<RegisterPetFormData>({
     resolver: yupResolver(registerPetSchema),
+    defaultValues: {
+      name: pet?.name,
+      description: pet?.description ?? undefined,
+      type: pet?.type,
+      age: pet?.age,
+      size: pet?.size,
+      gender: pet?.gender,
+      location: `${pet?.city} - ${pet?.uf}`,
+      is_up_for_adoption: pet?.is_up_for_adoption,
+    },
   });
 
   const { errors, isSubmitting } = formState;
+
+  useEffect(() => {
+    if (petPicturesUrl && petPicturesUrl.length > 0) {
+      handleFiles(petPicturesUrl);
+    }
+  }, [petPicturesUrl]);
+
+  useEffect(() => {
+    if (pet && pet.cover_url) {
+      handleCover(pet.cover_url);
+    } else {
+      setCover(files[0]);
+    }
+  }, [pet]);
+
+  useEffect(() => {
+    if (!cover) {
+      setCover(files[0]);
+    }
+  }, [files]);
+
+  async function handleFiles(urls: string[]) {
+    const filePromises = urls.map((url) => downloadAndConvertToFile(url));
+    const files = await Promise.all(filePromises);
+    const dropzoneFiles = files as DropzoneFile[];
+
+    setFiles(dropzoneFiles);
+  }
+
+  async function handleCover(url: string) {
+    const file = await downloadAndConvertToFile(url);
+    const dropzoneFile = file as DropzoneFile;
+
+    setCover(dropzoneFile);
+  }
+
+  async function downloadAndConvertToFile(url: string) {
+    try {
+      const response = await axios.get(url, { responseType: 'arraybuffer' });
+      if (response.status === 200) {
+        const blob = new Blob([response.data]);
+        const fileName = url.substring(url.lastIndexOf('/') + 1); // Extrair o nome do arquivo da URL
+        const file = new File([blob], fileName, { type: blob.type });
+
+        Object.assign(file, {
+          urlPathFromServer: url,
+        });
+
+        return file;
+      } else {
+        throw new Error(
+          `Erro ao baixar o arquivo: ${response.status} ${response.statusText}`
+        );
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      throw new Error(`Erro ao baixar o arquivo: ${error.message}`);
+    }
+  }
 
   const handleRegisterPet: SubmitHandler<RegisterPetFormData> = async (
     values
@@ -66,25 +148,10 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
 
     try {
       const picturesUrl: string[] = [];
-      let coverUrl;
-
-      if (files.length > 0) {
-        const filesToUpload = files as File[];
-
-        await Promise.all(
-          filesToUpload.map(async (file) => {
-            const url = await handleUploadFile(file);
-            picturesUrl.push(String(url));
-
-            if (file === cover) {
-              coverUrl = url;
-            }
-          })
-        );
-      }
+      // let coverUrl;
 
       const pet = {
-        cover_url: coverUrl ?? null,
+        cover_url: null,
         name: values.name,
         description: values.description,
         type: values.type,
@@ -98,7 +165,7 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
       };
 
       const { data } = await api.post(
-        '/orgs/pets',
+        '/pets',
         { ...pet },
         {
           headers: {
@@ -107,9 +174,27 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
         }
       );
 
+      if (files.length > 0) {
+        const filesNotFromServer = files.filter(
+          (f) => f.urlPathFromServer === null
+        );
+        const filesToUpload = filesNotFromServer as File[];
+
+        await Promise.all(
+          filesToUpload.map(async (file) => {
+            const url = await handleUploadFile(file);
+            picturesUrl.push(String(url));
+
+            // if (file === cover) {
+            //   coverUrl = url;
+            // }
+          })
+        );
+      }
+
       if (picturesUrl.length > 0) {
         await api.post(
-          `/orgs/pets/${data.id}/pictures`,
+          `/pets/${data.id}/pictures`,
           { picturesUrl },
           {
             headers: {
@@ -120,8 +205,7 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
       }
 
       //To do
-      // 1 - Fluxo de exclusão de imagem
-      // 2 - Só gerar a imagem no server quando todos os campos passarem
+      // 2 - Implementar o update do pet
 
       router.push('/pets');
     } catch {
@@ -178,7 +262,62 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
   }
 
   function handleAddFiles(adds: DropzoneFile[]) {
-    setFiles((prev) => [...prev, ...adds]);
+    setFiles((prev) => {
+      if (prev.length === LIMIT_IMAGE_QUANTITY) {
+        return prev;
+      }
+
+      const prevQuantity = prev.length;
+      const separateAdds = adds.splice(0, LIMIT_IMAGE_QUANTITY - prevQuantity);
+
+      return [...prev, ...separateAdds];
+    });
+  }
+
+  async function handleRemoveFile(file: DropzoneFile) {
+    if (file.name === cover?.name) {
+      setCover(null);
+    }
+
+    try {
+      if (file.urlPathFromServer) {
+        const token = await getToken({ template: 'jwt-patas-peludas' });
+        const fileName = new URL(file.urlPathFromServer).pathname.split('/')[2];
+
+        await api.delete(`/pets/pictures/${fileName}`, {
+          params: {
+            baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await api.delete(`/files/remove/${fileName}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      setFiles((prev) => prev.filter((p) => p !== file));
+    } catch {
+      toast.custom(
+        (t) => (
+          <div
+            className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            }`}
+          >
+            <span className=" text-base font-semibold">
+              Não foi possível completar a ação 🙁
+            </span>
+            <p className="text-xs">Por favor tente novamente mais tarde.</p>
+          </div>
+        ),
+        { position: 'bottom-right' }
+      );
+    }
   }
 
   return (
@@ -278,7 +417,7 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
             <Checkbox
               label="Está disponível para adoção?"
               {...register('is_up_for_adoption')}
-              defaultChecked
+              defaultChecked={!isUpdateMode}
             />
           </div>
 
@@ -305,14 +444,17 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
         />
       </Fieldset>
 
-      <Fieldset title="Imagens do pet">
-        <PetDropzone
-          files={files}
-          handleAddFiles={handleAddFiles}
-          cover={cover}
-          setCover={setCover}
-        />
-      </Fieldset>
+      {files && (
+        <Fieldset title="Imagens do pet">
+          <PetDropzone
+            files={files}
+            handleAddFiles={handleAddFiles}
+            handleRemoveFile={handleRemoveFile}
+            cover={cover}
+            setCover={setCover}
+          />
+        </Fieldset>
+      )}
 
       {type && (
         <button
@@ -328,7 +470,7 @@ export function RegisterPetForm({ locales }: RegisterPetFormProps) {
             <span className="flex items-center gap-2 text-white text-xl">
               {type === 'DOG' && <Dog strokeWidth={1} />}
               {type === 'CAT' && <Cat strokeWidth={1} />}
-              Cadastrar
+              {isUpdateMode ? 'Salvar' : 'Cadastrar'}
             </span>
           )}
         </button>

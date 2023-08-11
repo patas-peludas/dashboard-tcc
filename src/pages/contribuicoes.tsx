@@ -1,91 +1,88 @@
-import { Layout } from '@/components/Layout';
-import { DollarSign, HelpingHand } from 'lucide-react';
-import { ContributionsTable } from '@/components/Table/ContributionsTable';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 
-const contributions = [
-  {
-    id: '15',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '25',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '35',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '45',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '55',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '65',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '75',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '85',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '95',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-  {
-    id: '105',
-    avatarURL: 'https://github.com/joaod3v.png',
-    name: 'João Pedro Silva',
-    type: 'Apadrinhamento',
-    amount: 100,
-    date: new Date(),
-  },
-];
+// const contributions = [
+//   {
+//     id: '15',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '25',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '35',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '45',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '55',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '65',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '75',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '85',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '95',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+//   {
+//     id: '105',
+//     avatarURL: 'https://github.com/joaod3v.png',
+//     name: 'João Pedro Silva',
+//     type: 'Apadrinhamento',
+//     amount: 100,
+//     date: new Date(),
+//   },
+// ];
 
 export default function Contributions() {
   return (
@@ -93,7 +90,7 @@ export default function Contributions() {
       <Head>
         <title>Contribuições | Patas Peludas</title>
       </Head>
-      <Layout title="Contribuições">
+      {/* <Layout title="Contribuições">
         <div>
           <div className="w-max mx-auto flex flex-col gap-3">
             <div className="w-full flex items-center justify-between">
@@ -122,12 +119,12 @@ export default function Contributions() {
             </div>
           </div>
 
-          {/* <div className="w-full grid grid-cols-2 gap-5 mt-8">
+          <div className="w-full grid grid-cols-2 gap-5 mt-8">
           <TopTable {...contributionOne} />
           <TopTable {...contributionTwo} />
-        </div> */}
         </div>
-      </Layout>
+        </div>
+      </Layout> */}
     </>
   );
 }

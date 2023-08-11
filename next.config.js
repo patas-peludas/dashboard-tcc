@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['http://localhost:3333'],
+    domains:
+      process.env.NODE_ENV === 'development' ? ['localhost'] : ['pataspeludas'],
   },
 };
 

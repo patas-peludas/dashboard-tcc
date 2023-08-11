@@ -1,16 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/alt-text */
 import { clsx } from 'clsx';
-import { Image } from 'lucide-react';
-import { useEffect } from 'react';
+import { Image, Trash } from 'lucide-react';
 import Dropzone, { Accept } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
-import { DropzoneFile } from '../Form/RegisterPetForm';
+import { DropzoneFile, LIMIT_IMAGE_QUANTITY } from '../Form/RegisterPetForm';
+import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import { ConfirmationDialog } from '../ConfirmationDialog';
 
 type PetDropzoneProps = {
   files: DropzoneFile[];
   handleAddFiles: (files: DropzoneFile[]) => void;
-  cover?: DropzoneFile;
+  handleRemoveFile: (file: DropzoneFile) => Promise<void>;
+  cover: DropzoneFile | null;
   setCover: (cover: DropzoneFile) => void;
 };
 
@@ -21,26 +23,16 @@ const accept: Accept = {
 export function PetDropzone({
   files,
   handleAddFiles,
+  handleRemoveFile,
   cover,
   setCover,
 }: PetDropzoneProps) {
-  useEffect(() => {
-    // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
-    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, []);
-
-  useEffect(() => {
-    if (!cover) {
-      setCover(files[0]);
-    }
-  }, [files]);
-
   return (
     <Dropzone
       onDrop={(acceptedFiles) => {
         const adds: DropzoneFile[] = acceptedFiles.map((file) =>
           Object.assign(file, {
-            preview: URL.createObjectURL(file),
+            urlPathFromServer: null,
           })
         );
 
@@ -70,22 +62,24 @@ export function PetDropzone({
     >
       {({ getRootProps, getInputProps }) => (
         <section className="w-full flex flex-col gap-6">
-          <div
-            {...getRootProps()}
-            className="w-full h-[200px] border-dashed border-zinc-400 border bg-zinc-200 rounded-lg flex items-center justify-center"
-          >
-            <input {...getInputProps()} />
+          {files.length < LIMIT_IMAGE_QUANTITY && (
+            <div
+              {...getRootProps()}
+              className="w-full h-[200px] border-dashed border-zinc-400 border bg-zinc-200 rounded-lg flex items-center justify-center"
+            >
+              <input {...getInputProps()} />
 
-            <div className="flex items-center gap-4">
-              <Image className="w-14 h-14 text-green-600" strokeWidth={1} />
-              <div>
-                <p>Clique ou arraste para adicionar imagens...</p>
-                <p className="text-xs text-zinc-500">
-                  PNG, JPG, JPEG até no máximo 5MB
-                </p>
+              <div className="flex items-center gap-4">
+                <Image className="w-14 h-14 text-green-600" strokeWidth={1} />
+                <div>
+                  <p>Clique ou arraste para adicionar imagens...</p>
+                  <p className="text-xs text-zinc-500">
+                    Limite de 6 imagens PNG, JPG, JPEG até no máximo 5MB
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {files.length > 0 && (
             <aside className="w-full  flex flex-col gap-4">
@@ -93,39 +87,78 @@ export function PetDropzone({
                 <span className="text-lg text-green-700">
                   Imagens adicionadas
                 </span>
-                <span className="text-sm text-green-600">
-                  *Clique em uma outra imagem para mudar a seleção da imagem de
-                  capa, caso preferir.
-                </span>
+                <div className="flex items-center justify-between mt-5">
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    Clique em <Image className="w-5 h-5" /> para mudar a imagem
+                    de capa
+                  </span>
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    Clique em <Trash className="w-5 h-5" /> para excluir a
+                    imagem
+                  </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                {files.map((file) => (
-                  <button
-                    key={file.name}
-                    className={clsx('flex items-center justify-center', {
-                      'ring ring-green-500 rounded relative': file === cover,
-                    })}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCover(file);
-                    }}
+              <div className="grid grid-cols-3 gap-6">
+                {files.map((file, index) => (
+                  <div
+                    key={`${file.name} - ${index}`}
+                    className={clsx(
+                      'flex items-center justify-center relative rounded-lg ring-8 ',
+                      {
+                        ' ring-green-300 ': file.name === cover?.name,
+                        'ring-transparent': file.name !== cover?.name,
+                      }
+                    )}
                   >
-                    {file === cover && (
-                      <span className="flex items-center gap-2 absolute top-0 right-0 bg-green-600 py-1 px-2 rounded-tr rounded-bl text-zinc-50 text-sm">
+                    {file.name === cover?.name && (
+                      <span className="flex items-center gap-2 absolute top-0 right-0 bg-green-500 py-1 px-2 rounded-tr rounded-bl text-zinc-50 text-sm">
                         <Image strokeWidth={1} className="w-5 h-5" /> Imagem de
                         Capa
                       </span>
                     )}
                     <img
-                      src={file.preview}
-                      className="block w-[250px] h-[250px] object-contain"
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      className="block w-[300px] h-[300px] object-cover rounded-lg"
                       // Revoke data uri after image is loaded
                       onLoad={() => {
-                        URL.revokeObjectURL(file.preview);
+                        URL.revokeObjectURL(file.name);
                       }}
                     />
-                  </button>
+
+                    {file.name !== cover?.name && (
+                      <button
+                        type="button"
+                        className="bg-green-500 p-2 rounded absolute bottom-0 left-0"
+                        onClick={() => setCover(file)}
+                      >
+                        <Image
+                          strokeWidth={1}
+                          className="w-6 h-6 text-zinc-50"
+                        />
+                      </button>
+                    )}
+
+                    <AlertDialog.Root>
+                      <AlertDialog.Trigger asChild>
+                        <button
+                          type="button"
+                          className="bg-green-600 p-2 rounded absolute bottom-0 right-0"
+                        >
+                          <Trash
+                            strokeWidth={1}
+                            className="w-6 h-6 text-zinc-50"
+                          />
+                        </button>
+                      </AlertDialog.Trigger>
+                      <ConfirmationDialog
+                        question="Tem certeza que deseja remover a imagem?"
+                        message="Ao remover a imagem, ela não estará mais associada ao pet."
+                        onConfimation={() => handleRemoveFile(file)}
+                      />
+                    </AlertDialog.Root>
+                  </div>
                 ))}
               </div>
             </aside>

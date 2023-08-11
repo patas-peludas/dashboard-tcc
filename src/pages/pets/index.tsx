@@ -38,6 +38,7 @@ export type Pet = {
 
 type PetsProps = {
   orgName: string;
+  orgId: string;
   pets: Pet[];
   currentPage: number;
   totalPages: number;
@@ -45,6 +46,7 @@ type PetsProps = {
 
 export default function Pets({
   orgName,
+  orgId,
   pets,
   currentPage,
   totalPages,
@@ -59,6 +61,7 @@ export default function Pets({
           <div className="w-max mx-auto">
             <PetsTable
               pets={pets}
+              orgId={orgId}
               currentPage={currentPage}
               totalPages={totalPages}
             />
@@ -128,6 +131,7 @@ export const getServerSideProps: GetServerSideProps = async (
     return {
       props: {
         orgName: responseOrg.data.org.name,
+        orgId: responseOrg.data.org.id,
         pets: responsePets.data.pets,
         currentPage: ctx.params?.page ?? 1,
         totalPages: Math.ceil(responsePets.data.count / 20),
