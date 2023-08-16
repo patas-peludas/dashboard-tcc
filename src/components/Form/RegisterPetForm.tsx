@@ -141,16 +141,14 @@ export function RegisterPetForm({
     }
   }
 
-  const handleRegisterPet: SubmitHandler<RegisterPetFormData> = async (
-    values
-  ) => {
+  const handlePet: SubmitHandler<RegisterPetFormData> = async (values) => {
     const token = await getToken({ template: 'jwt-patas-peludas' });
 
     try {
       const picturesUrl: string[] = [];
-      // let coverUrl;
+      let coverUrl: string | null = null;
 
-      const pet = {
+      const petData = {
         cover_url: null,
         name: values.name,
         description: values.description,
@@ -164,15 +162,33 @@ export function RegisterPetForm({
         has_already_adopted: false,
       };
 
-      const { data } = await api.post(
-        '/pets',
-        { ...pet },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let responsePet;
+
+      if (isUpdateMode) {
+        const { data } = await api.put<{ pet: Pet }>(
+          `/pets/${pet!.id}`,
+          { ...petData },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        responsePet = data.pet;
+      } else {
+        const { data } = await api.post<{ pet: Pet }>(
+          '/pets',
+          { ...petData },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        responsePet = data.pet;
+      }
 
       if (files.length > 0) {
         const filesNotFromServer = files.filter(
@@ -185,16 +201,16 @@ export function RegisterPetForm({
             const url = await handleUploadFile(file);
             picturesUrl.push(String(url));
 
-            // if (file === cover) {
-            //   coverUrl = url;
-            // }
+            if (file === cover) {
+              coverUrl = String(url);
+            }
           })
         );
       }
 
       if (picturesUrl.length > 0) {
         await api.post(
-          `/pets/${data.id}/pictures`,
+          `/pets/${responsePet.id}/pictures`,
           { picturesUrl },
           {
             headers: {
@@ -204,8 +220,15 @@ export function RegisterPetForm({
         );
       }
 
-      //To do
-      // 2 - Implementar o update do pet
+      await api.patch(
+        `/pets/${responsePet.id}/cover`,
+        { cover_url: coverUrl ?? cover?.urlPathFromServer },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       router.push('/pets');
     } catch {
@@ -321,10 +344,7 @@ export function RegisterPetForm({
   }
 
   return (
-    <form
-      className="flex flex-col gap-6"
-      onSubmit={handleSubmit(handleRegisterPet)}
-    >
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit(handlePet)}>
       <Fieldset title="Dados do pet">
         <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           <Input

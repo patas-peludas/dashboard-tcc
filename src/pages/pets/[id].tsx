@@ -25,10 +25,12 @@ export default function PetProfile({
   orgName,
   locales,
 }: PetProfileProps) {
+  const title = `${pet.name} | Patas Peludas`;
+
   return (
     <>
       <Head>
-        <title>{pet.name} | Patas Peludas</title>
+        <title>{title}</title>
       </Head>
       <Layout title={pet.name} orgName={orgName}>
         <RegisterPetForm
@@ -81,3 +83,8 @@ export const getServerSideProps: GetServerSideProps = async (
     };
   }
 };
+
+// To do
+// 1 - Fluxo de confirmação de adoção
+// 2 - Rever o update da ONG (algumas partes está dando erro) -> Addresses...
+// 3 - Fluxo de remoção do Pet
