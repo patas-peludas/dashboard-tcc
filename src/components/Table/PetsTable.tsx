@@ -6,6 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import { ConfirmationDialog } from '../ConfirmationDialog';
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'react-hot-toast';
+import { PetPicture } from '@/pages/pets/[id]';
 
 type PetsTableProps = {
   pets: Pet[];
@@ -54,6 +59,8 @@ export function PetsTable({
   const [name, setName] = useState('');
   const [petsArray, setPetsArray] = useState<Pet[]>(pets);
 
+  const { getToken } = useAuth();
+
   const router = useRouter();
 
   useEffect(() => {
@@ -61,6 +68,10 @@ export function PetsTable({
       setPetsArray(pets);
     }
   }, [name]);
+
+  useEffect(() => {
+    setPetsArray(pets);
+  }, [pets]);
 
   async function handlePetSearch() {
     try {
@@ -72,6 +83,57 @@ export function PetsTable({
       setPetsArray(data.pets);
     } catch {
       setPetsArray([]);
+    }
+  }
+
+  async function handleRemovePet(pet: Pet) {
+    const token = await getToken({ template: 'jwt-patas-peludas' });
+
+    try {
+      const { data } = await api.get<{ petPictures: PetPicture[] }>(
+        `/pets/${pet.id}`
+      );
+
+      await api.delete(`pets/${pet.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.petPictures.length > 0) {
+        await Promise.all(
+          data.petPictures.map(async (petPicture) => {
+            await api.delete(
+              `/files/remove/${petPicture.picture_url.split('/uploads/')[1]}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+          })
+        );
+      }
+
+      setPetsArray((prev) => prev.filter((p) => p.id !== pet.id));
+
+      router.push('/pets');
+    } catch {
+      toast.custom(
+        (t) => (
+          <div
+            className={`bg-red-500 px-6 py-4 shadow-md rounded-full flex flex-col gap-1 text-zinc-50 ${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            }`}
+          >
+            <span className=" text-base font-semibold">
+              Não foi possível completar a ação 🙁
+            </span>
+            <p className="text-xs">Por favor tente novamente mais tarde.</p>
+          </div>
+        ),
+        { position: 'bottom-right' }
+      );
     }
   }
 
@@ -181,12 +243,22 @@ export function PetsTable({
                     className="text-green-600 w-6 h-6"
                   />
                 </button>
-                <button title="Remover pet">
-                  <MinusCircle
-                    strokeWidth={2}
-                    className="text-green-600 w-6 h-6"
+
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger asChild>
+                    <button title="Remover pet">
+                      <MinusCircle
+                        strokeWidth={2}
+                        className="text-green-600 w-6 h-6"
+                      />
+                    </button>
+                  </AlertDialog.Trigger>
+                  <ConfirmationDialog
+                    question="Tem certeza que deseja excluir o cadastro do pet?"
+                    message="Ao excluir o pet, não será mais possível recuperar suas informações."
+                    onConfimation={() => handleRemovePet(pet)}
                   />
-                </button>
+                </AlertDialog.Root>
               </td>
             </tr>
           ))}
@@ -202,12 +274,25 @@ export function PetsTable({
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="bg-white border-solid border border-green-600 py-2 px-3 rounded">
-              Anterior
-            </button>
-            <button className="bg-green-600 py-2 px-3 rounded text-white">
-              Próximo
-            </button>
+            {currentPage > 1 && (
+              <button
+                className="bg-white border-solid border border-green-600 py-2 px-3 rounded"
+                onClick={() => router.push(`/pets?page=${currentPage - 1}`)}
+                type="button"
+              >
+                Anterior
+              </button>
+            )}
+
+            {currentPage < totalPages && (
+              <button
+                className="bg-green-600 py-2 px-3 rounded text-white"
+                onClick={() => router.push(`/pets?page=${currentPage + 1}`)}
+                type="button"
+              >
+                Próximo
+              </button>
+            )}
           </div>
         </div>
       )}

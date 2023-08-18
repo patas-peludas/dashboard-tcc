@@ -124,8 +124,15 @@ export const getServerSideProps: GetServerSideProps = async (
       org: Org;
     }>(`/orgs/${orgId}`, { params: { by: 'ID' } });
 
+    const page = ctx.query?.page ?? 1;
+
     const responsePets = await api.get<{ pets: Pet[]; count: number }>(
-      `/orgs/${orgId}/pets`
+      `/orgs/${orgId}/pets`,
+      {
+        params: {
+          page,
+        },
+      }
     );
 
     return {
@@ -133,7 +140,7 @@ export const getServerSideProps: GetServerSideProps = async (
         orgName: responseOrg.data.org.name,
         orgId: responseOrg.data.org.id,
         pets: responsePets.data.pets,
-        currentPage: ctx.params?.page ?? 1,
+        currentPage: Number(page),
         totalPages: Math.ceil(responsePets.data.count / 20),
       },
     };

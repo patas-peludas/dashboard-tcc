@@ -17,7 +17,7 @@ export default function WaitConfirmation({ orgName }: WaitConfirmationProps) {
       <Head>
         <title>Aguardando Confirmação | Patas Peludas</title>
       </Head>
-      <Layout title="Aguardando Confirmação" isLocked>
+      <Layout title="Aguardando Confirmação" orgName={orgName} isLocked>
         <div className="flex xs:flex-col lg:flex-row items-start mx-auto gap-2 h-max xs:w-full lg:w-[800px]">
           <Image
             src={waitImg}
