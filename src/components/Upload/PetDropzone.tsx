@@ -69,7 +69,7 @@ export function PetDropzone({
             >
               <input {...getInputProps()} />
 
-              <div className="flex items-center gap-4">
+              <div className="flex xs:flex-col lg:flex-row xs:items-start lg:items-center gap-4 xs:p-10">
                 <Image className="w-14 h-14 text-green-600" strokeWidth={1} />
                 <div>
                   <p>Clique ou arraste para adicionar imagens...</p>
@@ -87,7 +87,7 @@ export function PetDropzone({
                 <span className="text-lg text-green-700">
                   Imagens adicionadas
                 </span>
-                <div className="flex items-center justify-between mt-5">
+                <div className="flex xs:flex-col lg:flex-row xs:gap-4 lg:items-center lg:justify-between mt-5">
                   <span className="text-sm text-green-600 flex items-center gap-1">
                     Clique em <Image className="w-5 h-5" /> para mudar a imagem
                     de capa
@@ -99,7 +99,7 @@ export function PetDropzone({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-6 xs:mt-4 lg:mt-0">
                 {files.map((file, index) => (
                   <div
                     key={`${file.name} - ${index}`}

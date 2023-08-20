@@ -344,7 +344,10 @@ export function RegisterPetForm({
   }
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={handleSubmit(handlePet)}>
+    <form
+      className="flex flex-col gap-6 max-w-[911px]"
+      onSubmit={handleSubmit(handlePet)}
+    >
       <Fieldset title="Dados do pet">
         <div className="grid xs:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           <Input
@@ -433,7 +436,7 @@ export function RegisterPetForm({
             ))}
           </Select>
 
-          <div className="mt-8 mx-auto">
+          <div className="lg:mt-8 lg:mx-auto">
             <Checkbox
               label="Está disponível para adoção?"
               {...register('is_up_for_adoption')}

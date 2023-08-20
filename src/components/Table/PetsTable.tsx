@@ -201,22 +201,27 @@ export function PetsTable({
           {petsArray.map((pet) => (
             <tr key={pet.id}>
               <td className="flex items-center gap-2 text-green-700 text-sm font-medium tracking-tight leading-6 p-2 border-solid border-r border-r-gray-400">
-                {pet.cover_url ? (
-                  <Image
-                    className="w-8 h-8 rounded-full"
-                    loading="lazy"
-                    src={pet.cover_url}
-                    alt={pet.name}
-                    width={32}
-                    height={32}
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center">
-                    {pet.type === 'DOG' && <Dog strokeWidth={1} />}
-                    {pet.type === 'CAT' && <Cat strokeWidth={1} />}
-                  </div>
-                )}
-                {pet.name}
+                <Link
+                  href={`/pets/${pet.id}`}
+                  className="flex items-center gap-2"
+                >
+                  {pet.cover_url ? (
+                    <Image
+                      className="w-8 h-8 rounded-full"
+                      loading="lazy"
+                      src={pet.cover_url}
+                      alt={pet.name}
+                      width={32}
+                      height={32}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center">
+                      {pet.type === 'DOG' && <Dog strokeWidth={1} />}
+                      {pet.type === 'CAT' && <Cat strokeWidth={1} />}
+                    </div>
+                  )}
+                  {pet.name}
+                </Link>
               </td>
 
               <td className="text-sm text-green-700 font-medium text-center p-2 border-solid border-r border-r-gray-400">
@@ -234,15 +239,12 @@ export function PetsTable({
               </td>
 
               <td className="flex items-center justify-center gap-4">
-                <button
-                  title="Editar informações"
-                  onClick={() => router.push(`/pets/${pet.id}`)}
-                >
+                <Link title="Editar informações" href={`/pets/${pet.id}`}>
                   <FileEdit
                     strokeWidth={2}
                     className="text-green-600 w-6 h-6"
                   />
-                </button>
+                </Link>
 
                 <AlertDialog.Root>
                   <AlertDialog.Trigger asChild>
