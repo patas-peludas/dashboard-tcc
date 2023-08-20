@@ -2,7 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'pataspeludas.com.br', 'server.pataspeludas.com.br'],
+    domains: [
+      'localhost',
+      'https://pataspeludas.com.br',
+      'https://server.pataspeludas.com.br',
+    ],
   },
 };
 
