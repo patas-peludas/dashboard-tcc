@@ -138,8 +138,8 @@ export function PetsTable({
   }
 
   return (
-    <div className="w-max bg-white rounded-[20px] p-6">
-      <div className="mb-12 flex items-center justify-between w-full">
+    <div className="xs:w-full lg:w-max bg-white rounded-[20px] p-6 xs:overflow-x-scroll">
+      <div className="mb-12 flex xs:flex-col lg:flex-row xs:gap-4 lg:gap-0 xs:items-start lg:items-center justify-between w-full">
         <Link
           href="/pets/cadastrar"
           className="bg-green-600 text-lg font-medium leading-6 tracking-tight rounded-lg py-3 px-4 text-white flex items-center gap-2 w-max hover:bg-green-700 transition-all"
@@ -176,22 +176,22 @@ export function PetsTable({
       <table className="w-full">
         <thead className="w-full">
           <tr className="w-full">
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 w-[216px] p-0">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 min-w-[216px] p-0">
               Nome
             </th>
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 p-0 w-24">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 p-0 min-w-24">
               Tipo
             </th>
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 w-28 p-0">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 min-w-28 p-0">
               Idade
             </th>
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 w-40 p-0">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 xs:min-w-[100px] lg:min-w-40 p-0">
               Tamanho
             </th>
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 w-24 p-0">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 min-w-24 p-0">
               Gênero
             </th>
-            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 w-28 p-0">
+            <th className="text-sm font-medium leading-6 tracking-tight text-gray-500 min-w-28 p-0">
               Ações rápidas
             </th>
           </tr>
@@ -200,7 +200,7 @@ export function PetsTable({
         <tbody className="[&>*:nth-child(odd)]:bg-zinc-50 [&>*:nth-child(even)]:bg-zinc-100 p-2">
           {petsArray.map((pet) => (
             <tr key={pet.id}>
-              <td className="flex items-center gap-2 text-green-700 text-sm font-medium tracking-tight leading-6 p-2 border-solid border-r border-r-gray-400">
+              <td className="text-green-700 text-sm font-medium tracking-tight leading-6 p-2 border-solid border-r border-r-gray-400">
                 <Link
                   href={`/pets/${pet.id}`}
                   className="flex items-center gap-2"
@@ -238,29 +238,31 @@ export function PetsTable({
                 {petGenders[pet.gender]}
               </td>
 
-              <td className="flex items-center justify-center gap-4">
-                <Link title="Editar informações" href={`/pets/${pet.id}`}>
-                  <FileEdit
-                    strokeWidth={2}
-                    className="text-green-600 w-6 h-6"
-                  />
-                </Link>
+              <td>
+                <div className="flex xs:flex-col lg:flex-row items-center justify-center gap-4">
+                  <Link title="Editar informações" href={`/pets/${pet.id}`}>
+                    <FileEdit
+                      strokeWidth={2}
+                      className="text-green-600 w-6 h-6"
+                    />
+                  </Link>
 
-                <AlertDialog.Root>
-                  <AlertDialog.Trigger asChild>
-                    <button title="Remover pet">
-                      <MinusCircle
-                        strokeWidth={2}
-                        className="text-green-600 w-6 h-6"
-                      />
-                    </button>
-                  </AlertDialog.Trigger>
-                  <ConfirmationDialog
-                    question="Tem certeza que deseja excluir o cadastro do pet?"
-                    message="Ao excluir o pet, não será mais possível recuperar suas informações."
-                    onConfimation={() => handleRemovePet(pet)}
-                  />
-                </AlertDialog.Root>
+                  <AlertDialog.Root>
+                    <AlertDialog.Trigger asChild>
+                      <button title="Remover pet">
+                        <MinusCircle
+                          strokeWidth={2}
+                          className="text-green-600 w-6 h-6"
+                        />
+                      </button>
+                    </AlertDialog.Trigger>
+                    <ConfirmationDialog
+                      question="Tem certeza que deseja excluir o cadastro do pet?"
+                      message="Ao excluir o pet, não será mais possível recuperar suas informações."
+                      onConfimation={() => handleRemovePet(pet)}
+                    />
+                  </AlertDialog.Root>
+                </div>
               </td>
             </tr>
           ))}

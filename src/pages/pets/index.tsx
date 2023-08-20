@@ -58,7 +58,7 @@ export default function Pets({
       </Head>
       <Layout title="Pets" orgName={orgName}>
         {pets.length > 0 ? (
-          <div className="w-max mx-auto">
+          <div className="xs:w-full lg:w-max mx-auto">
             <PetsTable
               pets={pets}
               orgId={orgId}
