@@ -9,6 +9,8 @@ const nextConfig = {
           process.env.NODE_ENV === 'development'
             ? 'localhost'
             : '**.pataspeludas.com.br',
+        port: process.env.NODE_ENV === 'development' ? '3333' : '80',
+        pathname: '/uploads/**',
       },
     ],
   },
