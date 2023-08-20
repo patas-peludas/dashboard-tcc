@@ -2,12 +2,27 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      'localhost',
-      'https://pataspeludas.com.br',
-      'https://server.pataspeludas.com.br',
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3333',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.pataspeludas.com.br',
+        port: '80',
+        pathname: '/uploads/**',
+      },
     ],
   },
+  // images: {
+  //   domains:
+  //     process.env.NODE_ENV === 'development'
+  //       ? ['localhost']
+  //       : ['pataspeludas.com.br', 'server.pataspeludas.com.br'],
+  // },
 };
 
 module.exports = nextConfig;
