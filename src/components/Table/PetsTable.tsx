@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import Image from 'next/image';
 import { Pet } from '@/pages/pets';
 import { api } from '@/services/api';
 import { Cat, Dog, FileEdit, MinusCircle, Search } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
